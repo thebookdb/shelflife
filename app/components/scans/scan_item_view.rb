@@ -4,6 +4,7 @@ module Components
       include ActionView::Helpers::DateHelper
       include ActionView::RecordIdentifier
       include Phlex::Rails::Helpers::URLFor
+      include Rails.application.routes.url_helpers
 
       def initialize(scan:)
         @scan = scan
@@ -15,7 +16,7 @@ module Components
           div(class: "flex-shrink-0") do
             if @scan.product.cover_image.attached?
               img(
-                src: url_for(@scan.product.cover_image),
+                src: rails_blob_path(@scan.product.cover_image, only_path: true),
                 alt: @scan.product.safe_title,
                 class: "w-16 h-20 object-cover rounded"
               )

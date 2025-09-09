@@ -89,24 +89,17 @@ class ProductEnrichmentService
     begin
       Rails.logger.info "Downloading cover image for product #{product.gtin} from #{cover_url}"
 
-      # Download the image
-      uri = URI.parse(cover_url)
-      http = Net::HTTP.new(uri.host, uri.port)
-      http.use_ssl = uri.scheme == 'https'
+      # Download the image using Down gem (handles redirects, proper headers, etc.)
+      tempfile = Down.download(cover_url)
       
-      request = Net::HTTP::Get.new(uri)
-      response = http.request(request)
-      
-      return unless response.is_a?(Net::HTTPSuccess)
-
       # Extract filename from URL or generate one
       filename = extract_filename_from_url(cover_url) || "cover_#{product.gtin}.jpg"
 
       # Attach the image
       product.cover_image.attach(
-        io: StringIO.new(response.body),
+        io: tempfile,
         filename: filename,
-        content_type: response['content-type'] || 'image/jpeg'
+        content_type: tempfile.content_type || 'image/jpeg'
       )
 
       Rails.logger.info "Successfully attached cover image for product #{product.gtin}"

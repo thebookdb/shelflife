@@ -5,6 +5,6 @@ class Components::Products::ShowView < Phlex::HTML
 
   def view_template
     # Render the display component inside a turbo frame for the show page
-    Components::Products::DisplayView.new(product: @product).call
+    render Components::Products::DisplayView.new(product: @product)
   end
 end

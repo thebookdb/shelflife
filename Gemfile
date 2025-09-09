@@ -67,9 +67,11 @@ end
 gem "phlex", "~> 2.3"
 gem "phlex-rails", "~> 2.3"
 gem "tailwindcss-rails", "~> 4.3"
-gem "ulid-ruby", require: "ulid"
+# gem "ulid-ruby", require: "ulid"  # Removed - using integer primary keys instead
 gem "pagy", "~> 9.3"
 
 gem "dotenv-rails", "~> 3.1"
 
 gem "sqids", "~> 0.2.2"
+
+gem "down", "~> 5.4"

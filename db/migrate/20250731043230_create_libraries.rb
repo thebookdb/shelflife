@@ -1,7 +1,6 @@
 class CreateLibraries < ActiveRecord::Migration[8.0]
   def change
-    create_table :libraries, id: false do |t|
-      t.string :id, primary_key: true, default: -> { "ULID()" }
+    create_table :libraries do |t|
       t.string :name, null: false
       t.text :description
 

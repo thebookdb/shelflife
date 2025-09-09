@@ -39,7 +39,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_03_053103) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
-  create_table "libraries", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
+  create_table "libraries", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
     t.datetime "created_at", null: false
@@ -47,9 +47,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_03_053103) do
     t.index ["name"], name: "index_libraries_on_name", unique: true
   end
 
-  create_table "library_items", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
-    t.string "product_id", null: false
-    t.string "library_id", null: false
+  create_table "library_items", force: :cascade do |t|
+    t.bigint "product_id", null: false
+    t.bigint "library_id", null: false
     t.string "condition"
     t.string "location"
     t.text "notes"
@@ -61,8 +61,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_03_053103) do
     t.index ["product_id"], name: "index_library_items_on_product_id"
   end
 
-  create_table "products", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
-    t.string "ean", null: false
+  create_table "products", force: :cascade do |t|
+    t.string "gtin", null: false
     t.string "title"
     t.string "subtitle"
     t.string "author"
@@ -77,23 +77,23 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_03_053103) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.boolean "valid_barcode", default: true
-    t.index ["ean"], name: "index_products_on_ean", unique: true
+    t.index ["gtin"], name: "index_products_on_gtin", unique: true
     t.index ["product_type"], name: "index_products_on_product_type"
   end
 
-  create_table "scans", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
-    t.string "product_id", null: false
+  create_table "scans", force: :cascade do |t|
+    t.bigint "product_id", null: false
     t.datetime "scanned_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string "user_id", null: false
+    t.bigint "user_id", null: false
     t.index ["product_id"], name: "index_scans_on_product_id"
     t.index ["scanned_at"], name: "index_scans_on_scanned_at"
     t.index ["user_id"], name: "index_scans_on_user_id"
   end
 
-  create_table "sessions", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
-    t.string "user_id", null: false
+  create_table "sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
     t.string "ip_address"
     t.string "user_agent"
     t.datetime "created_at", null: false
@@ -101,7 +101,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_03_053103) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "users", id: :string, default: -> { "ULID()" }, force: :cascade do |t|
+  create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
     t.datetime "created_at", null: false

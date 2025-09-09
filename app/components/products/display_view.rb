@@ -14,7 +14,7 @@ class Components::Products::DisplayView < Components::Base
             div(class: "flex-shrink-0") do
               if @product.cover_image.attached?
                 img(
-                  src: url_for(@product.cover_image),
+                  src: Rails.application.routes.url_helpers.rails_blob_path(@product.cover_image, only_path: true),
                   alt: @product.title,
                   class: "w-16 h-24 object-cover rounded shadow-sm"
                 )

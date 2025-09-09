@@ -9,13 +9,14 @@ module TBDB
     # Use production TBDB API by default (will move to api.tbdb.info soon)
     DEFAULT_BASE_URI = ENV.fetch("TBDB_API_URI", "https://api.thebookdb.info").freeze
 
-    attr_reader :api_token, :jwt_token, :jwt_expires_at, :base_uri
+    attr_reader :api_token, :jwt_token, :jwt_expires_at, :base_uri, :last_request_time
 
     def initialize(api_token: ENV["TBDB_API_TOKEN"], base_uri: DEFAULT_BASE_URI)
       @api_token = api_token
       @base_uri = URI(base_uri)
       @jwt_token = nil
       @jwt_expires_at = nil
+      @last_request_time = nil
 
       validate_api_token!
       ensure_valid_jwt
@@ -102,8 +103,9 @@ module TBDB
       end
     end
 
-    def make_request(path, method: :get, params: {})
+    def make_request(path, method: :get, params: {}, retry_count: 0)
       ensure_valid_jwt
+      throttle_request
 
       # Ensure path starts with /
       api_path = path.start_with?("/") ? path : "/#{path}"
@@ -141,6 +143,7 @@ module TBDB
       http.use_ssl = uri.scheme == "https"
 
       response = http.request(request)
+      @last_request_time = Time.now
 
       # Handle response
       if response.is_a?(Net::HTTPSuccess)
@@ -152,6 +155,20 @@ module TBDB
           Rails.logger.error "Failed to parse TBDB API response as JSON: #{e.message}"
           nil
         end
+      elsif response.code == "429" && retry_count < 3
+        # Handle rate limiting with exponential backoff
+        wait_time = calculate_backoff_time(retry_count)
+        Rails.logger.warn "Rate limited (429), retrying in #{wait_time}s (attempt #{retry_count + 1}/3)"
+        
+        begin
+          error_data = JSON.parse(response.body)
+          Rails.logger.debug "Rate limit details: #{error_data.inspect}"
+        rescue JSON::ParserError
+          # Ignore parse errors for rate limit response
+        end
+        
+        sleep(wait_time)
+        return make_request(path, method: method, params: params, retry_count: retry_count + 1)
       else
         Rails.logger.error "TBDB API request failed: #{response.code} - #{response.message}"
         begin
@@ -162,6 +179,26 @@ module TBDB
         end
         nil
       end
+    end
+
+    def throttle_request
+      return unless @last_request_time
+      
+      # TBDB API allows 1 request per second, so wait if needed
+      time_since_last = Time.now - @last_request_time
+      min_interval = 1.1 # Add small buffer to avoid edge cases
+      
+      if time_since_last < min_interval
+        sleep_time = min_interval - time_since_last
+        Rails.logger.debug "Throttling request: sleeping #{sleep_time.round(2)}s"
+        sleep(sleep_time)
+      end
+    end
+
+    def calculate_backoff_time(retry_count)
+      # Exponential backoff: 2^retry_count + 1 second (1s buffer for rate limit)
+      base_wait = 2 ** retry_count
+      base_wait + 1
     end
   end
 

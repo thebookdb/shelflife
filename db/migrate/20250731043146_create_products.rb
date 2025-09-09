@@ -1,7 +1,6 @@
 class CreateProducts < ActiveRecord::Migration[8.0]
   def change
-    create_table :products, id: false do |t|
-      t.string :id, primary_key: true, default: -> { "ULID()" }
+    create_table :products do |t|
       t.string :gtin, null: false
       t.boolean :valid_barcode, default: true
       t.string :title

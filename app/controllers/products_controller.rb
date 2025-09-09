@@ -87,7 +87,7 @@ class ProductsController < ApplicationController
   private
 
   def find_or_create_product
-    gtin = params[:gtin13] || params[:id]
+    gtin = params[:gtin] || params[:id]
 
     begin
       @product = Product.find_or_create_by_gtin(gtin, {

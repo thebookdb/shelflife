@@ -108,6 +108,8 @@ GEM
     dotenv-rails (3.1.8)
       dotenv (= 3.1.8)
       railties (>= 6.1)
+    down (5.4.2)
+      addressable (~> 2.8)
     drb (2.2.3)
     ed25519 (1.4.0)
     erb (5.0.2)
@@ -355,7 +357,6 @@ GEM
       railties (>= 7.1.0)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
-    ulid-ruby (1.0.2)
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
@@ -394,6 +395,7 @@ DEPENDENCIES
   cssbundling-rails
   debug
   dotenv-rails (~> 3.1)
+  down (~> 5.4)
   jbuilder
   jsbundling-rails
   kamal
@@ -415,7 +417,6 @@ DEPENDENCIES
   thruster
   turbo-rails
   tzinfo-data
-  ulid-ruby
   web-console
 
 BUNDLED WITH

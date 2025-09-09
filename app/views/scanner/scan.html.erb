@@ -1,0 +1,115 @@
+<% content_for :tags do %>
+  <meta name="description" content="Advanced barcode scanner for book prices - find the cheapest books with Booko's improved scanner" >
+  <meta name="keywords" content="barcode scanner, book prices, ISBN scanner, quagga2, advanced scanner"/>
+  <meta property="og:description" content="Advanced Booko Barcode Scanner" >
+  <meta property="og:site_name" content="Booko" >
+  <!-- script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script-->
+<% end %>
+
+<div class="bg-white dark:bg-tertiary-800">
+  <div class="max-w-4xl mx-auto py-8 px-4 sm:py-12 sm:px-6 lg:px-8">
+    
+    <!-- Scanner Container -->
+    <div class="bg-gray-50 dark:bg-tertiary-700 rounded-lg p-6 mb-6" data-controller="quagga2-scanner">
+      
+      <!-- Scanner Controls -->
+      <div class="text-center mb-6">
+        <button data-quagga2-scanner-target="startButton" data-action="click->quagga2-scanner#toggleCamera" 
+                class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-booko hover:bg-booko-darker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko mr-4">
+          <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M23 4.5V8h-1V4.5A1.502 1.502 0 0 0 20.5 3H17V2h3.5A2.503 2.503 0 0 1 23 4.5zM4.5 22A1.502 1.502 0 0 1 3 20.5V17H2v3.5A2.503 2.503 0 0 0 4.5 23H8v-1zM22 20.5a1.502 1.502 0 0 1-1.5 1.5H17v1h3.5a2.503 2.503 0 0 0 2.5-2.5V17h-1zM3 4.5A1.502 1.502 0 0 1 4.5 3H8V2H4.5A2.503 2.503 0 0 0 2 4.5V8h1zM10 19V6H9v13zM6 6v13h2V6zm8 13V6h-2v13zm3-13v13h2V6zm-2 0v13h1V6z"/>
+          </svg>
+          <span data-quagga2-scanner-target="buttonText">Start Scan</span>
+        </button>
+        
+        <button data-quagga2-scanner-target="flashButton" data-action="click->quagga2-scanner#toggleFlash" 
+                class="inline-flex items-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-tertiary-600 hover:bg-gray-50 dark:hover:bg-tertiary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko" 
+                style="display: none;">
+          <span data-quagga2-scanner-target="flashText">💡 Torch Off</span>
+        </button>
+      </div>
+
+      <!-- Scanner Viewport -->
+      <div data-quagga2-scanner-target="scannerContainer" 
+           class="relative bg-black rounded-lg overflow-hidden mb-4 mx-auto" 
+           style="width: 320px; height: 240px; display: none;">
+        <div data-quagga2-scanner-target="scanner" class="w-full h-full"></div>
+
+        <!-- Scanner Overlay with Reticle -->
+        <div data-quagga2-scanner-target="overlayTop" 
+             class="absolute top-0 left-0 right-0" 
+             style="height: 30px; background: rgba(0, 0, 0, 0.3); z-index: 5; pointer-events: none;"></div>
+        <div data-quagga2-scanner-target="overlayBottom" 
+             class="absolute bottom-0 left-0 right-0" 
+             style="height: 30px; background: rgba(0, 0, 0, 0.3); z-index: 5; pointer-events: none;"></div>
+        <div data-quagga2-scanner-target="overlayLeft" 
+             class="absolute left-0" 
+             style="top: 30px; bottom: 30px; width: 25px; background: rgba(0, 0, 0, 0.3); z-index: 5; pointer-events: none;"></div>
+        <div data-quagga2-scanner-target="overlayRight" 
+             class="absolute right-0" 
+             style="top: 30px; bottom: 30px; width: 25px; background: rgba(0, 0, 0, 0.3); z-index: 5; pointer-events: none;"></div>
+
+        <!-- Barcode Reticle -->
+        <div data-quagga2-scanner-target="barcodeReticle" 
+             class="absolute border-2 border-red-500 bg-transparent" 
+             style="top: 30px; left: 25px; right: 25px; bottom: 30px;"></div>
+      </div>
+
+      <!-- Status Messages -->
+      <div data-quagga2-scanner-target="status" 
+           class="text-center text-sm text-gray-600 dark:text-gray-300 mb-4" 
+           style="display: none;">Ready to scan...</div>
+    </div>
+
+    <!-- Manual Input Section -->
+    <div class="bg-white dark:bg-tertiary-700 rounded-lg border border-gray-200 dark:border-tertiary-600 p-6 mb-6">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">
+        📝 Manual Entry
+      </h3>
+      <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">
+        Can't scan? Enter the barcode manually:
+      </p>
+      <div class="flex gap-3">
+        <input data-quagga2-scanner-target="manualInput" 
+               data-action="keypress->quagga2-scanner#handleEnterKey"
+               type="text" 
+               placeholder="Enter ISBN or barcode (e.g., 9781234567890)" 
+               class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 dark:border-tertiary-500 bg-white dark:bg-tertiary-600 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <button data-action="click->quagga2-scanner#searchManual"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-booko hover:bg-booko-darker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko">
+          Search
+        </button>
+      </div>
+    </div>
+
+    <!-- Help Section -->
+    <div class="bg-blue-50 dark:bg-blue-900 rounded-lg border border-blue-200 dark:border-blue-700 p-6 mb-6">
+      <h3 class="text-lg font-medium text-blue-900 dark:text-blue-100 mb-4">
+        💡 Scanning Tips
+      </h3>
+      <div class="grid md:grid-cols-2 gap-4 text-sm text-blue-800 dark:text-blue-200">
+        <ul class="list-disc list-inside space-y-2">
+          <li>Ensure good lighting on the barcode</li>
+          <li>Hold your device steady while scanning</li>
+          <li>Position barcode fully within the frame</li>
+          <li>Try different angles if scanning fails</li>
+        </ul>
+        <ul class="list-disc list-inside space-y-2">
+          <li>Clean your camera lens for best results</li>
+          <li>Works with ISBN-13, ISBN-10, and UPC codes</li>
+          <li>Use manual entry if camera scanning fails</li>
+          <li>Grant camera permissions when prompted</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Navigation Links -->
+    <div class="text-center space-y-4">
+      <p class="text-xs text-gray-500 dark:text-gray-400">
+        Having issues? <a href="/faq" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">Check our FAQ</a> or 
+        <a href="mailto:support@booko.com.au" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">contact support</a>
+      </p>
+    </div>
+
+  </div>
+</div>
