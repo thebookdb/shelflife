@@ -3,6 +3,7 @@ module Components
     class ScanItemView < Phlex::HTML
       include ActionView::Helpers::DateHelper
       include ActionView::RecordIdentifier
+      include Phlex::Rails::Helpers::URLFor
 
       def initialize(scan:)
         @scan = scan
@@ -35,7 +36,7 @@ module Components
           # Product details
           div(class: "flex-grow") do
             h3(class: "font-semibold text-gray-900") do
-              a(href: "/#{@scan.product.ean}", class: "hover:text-blue-600") do
+              a(href: "/#{@scan.product.gtin}", class: "hover:text-blue-600") do
                 @scan.product.safe_title
               end
             end
@@ -45,7 +46,7 @@ module Components
             end
 
             p(class: "text-xs text-gray-500 mt-1") do
-              "EAN: #{@scan.product.ean}"
+              "GTIN: #{@scan.product.gtin}"
             end
 
             if @scan.user.present?

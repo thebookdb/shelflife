@@ -211,12 +211,12 @@ class Components::Scanners::HorizontalView < Components::Base
                         div(class: "flex items-center gap-2") do
                           div(class: "text-xs text-gray-500") { scan.created_at.strftime("%H:%M") }
                           div(class: "flex-1 text-sm font-medium text-gray-800 truncate") do
-                            scan.product.title || scan.product.ean
+                            scan.product.title || scan.product.gtin
                           end
                         end
                       else
                         div(class: "text-sm text-gray-500") do
-                          "EAN: #{scan.ean}"
+                          "GTIN: #{scan.gtin}"
                         end
                       end
                     end

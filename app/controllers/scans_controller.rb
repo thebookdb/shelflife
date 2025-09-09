@@ -11,11 +11,11 @@ class ScansController < ApplicationController
   end
 
   def create
-    # Accept either product_id or ean parameter
+    # Accept either product_id or gtin parameter
     if params[:product_id]
       product = Product.find(params[:product_id])
-    elsif params[:ean]
-      product = Product.find_or_create_by_ean(params[:ean])
+    elsif params[:gtin]
+      product = Product.find_or_create_by_gtin(params[:gtin])
     else
       head :bad_request
       return
@@ -41,7 +41,7 @@ class ScansController < ApplicationController
   rescue ActiveRecord::RecordNotFound
     head :not_found
   rescue ArgumentError => e
-    Rails.logger.error "Invalid EAN: #{e.message}"
+    Rails.logger.error "Invalid GTIN: #{e.message}"
     head :bad_request
   rescue => e
     Rails.logger.error "Failed to track scan: #{e.message}"

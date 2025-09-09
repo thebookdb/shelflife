@@ -17,7 +17,7 @@ class ProductsController < ApplicationController
   end
 
   def show
-    # For EAN-13 URLs, render as Turbo Stream for scanner integration
+    # For GTIN URLs, render as Turbo Stream for scanner integration
     if request.headers["Accept"]&.include?("text/vnd.turbo-stream.html")
       render turbo_stream: turbo_stream.replace(
         "product-display",
@@ -87,10 +87,10 @@ class ProductsController < ApplicationController
   private
 
   def find_or_create_product
-    ean = params[:ean13] || params[:id]
+    gtin = params[:gtin13] || params[:id]
 
     begin
-      @product = Product.find_or_create_by_ean(ean, {
+      @product = Product.find_or_create_by_gtin(gtin, {
         product_type: "book" # Default assumption
       })
     rescue ArgumentError => e

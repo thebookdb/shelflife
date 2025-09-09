@@ -70,8 +70,8 @@ class Components::User::ProfileView < Components::Base
                 # Hide invalid barcodes setting
                 div(class: "flex items-center justify-between") do
                   div do
-                    dt(class: "text-sm font-medium text-gray-700") { "Hide Invalid ISBNs/EAN13 barcodes" }
-                    dd(class: "text-xs text-gray-500 mt-1") { "Hide products with invalid EAN-13 check digits or non-ISBN barcodes from listings" }
+                    dt(class: "text-sm font-medium text-gray-700") { "Hide Invalid ISBNs/GTIN barcodes" }
+                    dd(class: "text-xs text-gray-500 mt-1") { "Hide products with invalid GTIN check digits or non-ISBN barcodes from listings" }
                   end
                   div(class: "ml-4") do
                     label(class: "relative inline-flex items-center cursor-pointer") do
@@ -96,6 +96,37 @@ class Components::User::ProfileView < Components::Base
                   data: { settings_form_target: "status" },
                   class: "hidden text-sm mt-2"
                 )
+              end
+            end
+
+            # API Configuration Section
+            div(class: "px-6 py-6 border-t border-gray-200") do
+              h3(class: "text-lg font-medium text-gray-900 mb-6") { "API Configuration" }
+              
+              div(class: "space-y-4") do
+                div do
+                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "TheBookDB API Token" }
+                  dd(class: "text-xs text-gray-500 mb-3") { "Personal API token for accessing TheBookDB.info service. Falls back to application default if not set." }
+                  
+                  if @user.has_thebookdb_api_token?
+                    div(class: "text-sm text-gray-900 font-mono bg-gray-50 px-3 py-2 rounded border") do
+                      token = @user.thebookdb_api_token
+                      masked_token = token[0..7] + "..." + token[-4..-1]
+                      masked_token
+                    end
+                    div(class: "text-xs text-green-600 mt-1") { "Using personal token" }
+                  else
+                    if ENV["TBDB_API_TOKEN"].present?
+                      div(class: "text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded border") do
+                        "Using application default"
+                      end
+                    else
+                      div(class: "text-sm text-red-600 bg-red-50 px-3 py-2 rounded border border-red-200") do
+                        "No token configured"
+                      end
+                    end
+                  end
+                end
               end
             end
 

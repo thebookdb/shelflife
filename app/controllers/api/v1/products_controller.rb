@@ -19,7 +19,7 @@ class Api::V1::ProductsController < Api::V1::BaseController
   def product_json(product)
     {
       id: product.id,
-      ean: product.ean,
+      gtin: product.gtin,
       title: product.title,
       author: product.author,
       publisher: product.publisher,

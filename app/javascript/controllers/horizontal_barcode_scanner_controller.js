@@ -149,7 +149,7 @@ export default class extends Controller {
   onScanSuccess(decodedText, decodedResult) {
     console.log("Barcode detected (horizontal):", decodedText)
     
-    // Validate EAN-13 format (13 digits)
+    // Validate GTIN-13 format (13 digits)
     if (decodedText && /^\d{13}$/.test(decodedText)) {
       // Update result display
       const resultText = `✅ Scanned: ${decodedText}`
@@ -172,7 +172,7 @@ export default class extends Controller {
         this.fetchProductData(decodedText)
       }
     } else {
-      console.log("Invalid EAN-13 format:", decodedText)
+      console.log("Invalid GTIN-13 format:", decodedText)
       this.showError(`Invalid barcode format: ${decodedText}`)
     }
   }
@@ -182,10 +182,10 @@ export default class extends Controller {
     // We don't need to log every failure as it's normal during scanning
   }
 
-  async fetchProductData(ean) {
+  async fetchProductData(gtin) {
     try {
       // First, get the product data
-      const response = await fetch(`/${ean}`, {
+      const response = await fetch(`/${gtin}`, {
         method: 'GET',
         headers: {
           'Accept': 'text/vnd.turbo-stream.html',
@@ -199,7 +199,7 @@ export default class extends Controller {
         Turbo.renderStreamMessage(turboStreamData)
         
         // Track the scan after successful product fetch
-        await this.trackScan(ean)
+        await this.trackScan(gtin)
       } else {
         this.showError('Failed to load product data')
       }
@@ -209,7 +209,7 @@ export default class extends Controller {
     }
   }
 
-  async trackScan(ean) {
+  async trackScan(gtin) {
     try {
       await fetch('/scans', {
         method: 'POST',
@@ -217,7 +217,7 @@ export default class extends Controller {
           'Content-Type': 'application/json',
           'X-CSRF-Token': this.getCSRFToken()
         },
-        body: JSON.stringify({ ean: ean })
+        body: JSON.stringify({ gtin: gtin })
       })
     } catch (error) {
       console.error('Error tracking scan:', error)
@@ -239,9 +239,9 @@ export default class extends Controller {
   }
 
   // Scanner page specific methods
-  handleScannerPageScan(ean) {
+  handleScannerPageScan(gtin) {
     // Just track the scan - same as existing scanner
-    this.trackScan(ean)
+    this.trackScan(gtin)
     
     // Continue scanning after a brief pause
     setTimeout(() => {

@@ -5,6 +5,6 @@ class ProductDataFetchJob < ApplicationJob
   discard_on ActiveJob::DeserializationError
 
   def perform(product)
-    ProductEnrichmentService.new(tbdb_client: TBDB.client).call(product)
+    ProductEnrichmentService.new.call(product)
   end
 end

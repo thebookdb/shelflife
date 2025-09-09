@@ -1,20 +1,20 @@
 class BarcodeValidationService
   # Validates EAN-13 barcodes and determines if they represent valid ISBNs
 
-  def self.valid_ean13?(ean)
-    new(ean).valid_ean13?
+  def self.valid_ean13?(gtin)
+    new(gtin).valid_ean13?
   end
 
-  def self.valid_isbn?(ean)
-    new(ean).valid_isbn?
+  def self.valid_isbn?(gtin)
+    new(gtin).valid_isbn?
   end
 
-  def self.valid_barcode?(ean)
-    new(ean).valid_barcode?
+  def self.valid_barcode?(gtin)
+    new(gtin).valid_barcode?
   end
 
-  def initialize(ean)
-    @ean = ean.to_s.strip
+  def initialize(gtin)
+    @gtin = gtin.to_s.strip
   end
 
   # Check if the EAN-13 has a valid format and check digit
@@ -37,18 +37,18 @@ class BarcodeValidationService
   private
 
   def basic_format_valid?
-    @ean.match?(/\A\d{13}\z/)
+    @gtin.match?(/\A\d{13}\z/)
   end
 
   def isbn_prefix?
-    @ean.start_with?("978", "979")
+    @gtin.start_with?("978", "979")
   end
 
   # EAN-13 check digit validation using modulo 10 weighted sum
   def valid_check_digit?
     return false unless basic_format_valid?
 
-    digits = @ean.chars.map(&:to_i)
+    digits = @gtin.chars.map(&:to_i)
     check_digit = digits.pop
 
     # Calculate weighted sum (multiply odd positions by 1, even positions by 3)

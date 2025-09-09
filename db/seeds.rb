@@ -14,7 +14,7 @@ puts "Created #{Library.count} libraries: #{Library.pluck(:name).join(', ')}"
 # Create some sample products for testing
 sample_products = [
   {
-    ean: '9780143058144',
+    gtin: '9780143058144',
     title: 'The Hitchhiker\'s Guide to the Galaxy',
     author: 'Douglas Adams',
     publisher: 'Pan Books',
@@ -22,7 +22,7 @@ sample_products = [
     genre: 'Science Fiction'
   },
   {
-    ean: '9780747532743',
+    gtin: '9780747532743',
     title: 'Harry Potter and the Philosopher\'s Stone',
     author: 'J.K. Rowling',
     publisher: 'Bloomsbury',
@@ -32,7 +32,7 @@ sample_products = [
 ]
 
 sample_products.each do |product_attrs|
-  Product.find_or_create_by(ean: product_attrs[:ean]) do |product|
+  Product.find_or_create_by(gtin: product_attrs[:gtin]) do |product|
     product_attrs.each { |key, value| product.send("#{key}=", value) }
   end
 end

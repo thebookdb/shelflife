@@ -48,10 +48,10 @@ class Components::Products::DisplayView < Components::Base
                 p(class: "text-xs text-gray-500") { @product.publisher }
               end
 
-              # EAN badge
+              # GTIN badge
               div(class: "mt-2") do
                 span(class: "inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-mono") do
-                  @product.ean
+                  @product.gtin
                 end
               end
             end

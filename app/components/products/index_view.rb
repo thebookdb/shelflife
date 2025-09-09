@@ -40,7 +40,7 @@ class Components::Products::IndexView < Components::Base
               h2(class: "text-lg font-semibold text-gray-800 mb-4") { "Recent Additions" }
               div(class: "space-y-3") do
                 @recent_products.each do |product|
-                  a(href: "/#{product.ean}", class: "block") do
+                  a(href: "/#{product.gtin}", class: "block") do
                     div(class: "flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors") do
                       div(class: "flex-shrink-0") do
                         if product.cover_image.attached?

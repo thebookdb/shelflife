@@ -34,13 +34,7 @@ class Components::Shared::NavigationView < Components::Base
           "Libraries"
         end
         a(href: scans_path, class: "text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors") do
-          "My Scans"
-        end
-        a(href: users_path, class: "text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors") do
-          "Users"
-        end
-        a(href: "/api/v1", class: "text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors") do
-          "API"
+          "Scans"
         end
       end
     end
@@ -55,7 +49,7 @@ class Components::Shared::NavigationView < Components::Base
         end
         a(
           href: signout_path,
-          method: :delete,
+          data: { turbo_method: :delete },
           class: "text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
         ) do
           "Sign out"

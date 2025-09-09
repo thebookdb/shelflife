@@ -2,7 +2,8 @@ class CreateProducts < ActiveRecord::Migration[8.0]
   def change
     create_table :products, id: false do |t|
       t.string :id, primary_key: true, default: -> { "ULID()" }
-      t.string :ean, null: false
+      t.string :gtin, null: false
+      t.boolean :valid_barcode, default: true
       t.string :title
       t.string :subtitle
       t.string :author
@@ -17,7 +18,7 @@ class CreateProducts < ActiveRecord::Migration[8.0]
 
       t.timestamps
     end
-    add_index :products, :ean, unique: true
+    add_index :products, :gtin, unique: true
     add_index :products, :product_type
   end
 end

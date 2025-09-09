@@ -1,34 +1,34 @@
 class ProductEnrichmentService
-  def initialize(tbdb_client: TBDB.client)
-    @tbdb_client = tbdb_client
+  def initialize(tbdb_service: nil, user: nil)
+    @tbdb_service = tbdb_service || ShelfLife::TbdbService.new(user: user)
   end
 
   def call(product)
-    Rails.logger.info "Enriching product #{product.ean} from TBDB"
+    Rails.logger.info "Enriching product #{product.gtin} from TBDB"
 
     # Skip if already enriched
     if product.enriched?
-      Rails.logger.debug "Product #{product.ean} already has TBDB data, skipping"
+      Rails.logger.debug "Product #{product.gtin} already has TBDB data, skipping"
       return product
     end
 
     begin
-      tbdb_data = fetch_tbdb_data(product.ean)
+      tbdb_data = fetch_tbdb_data(product.gtin)
 
       if tbdb_data.present?
         update_product_attributes(product, tbdb_data)
         attach_cover_image(product, tbdb_data["cover_url"]) if tbdb_data["cover_url"].present?
         mark_enrichment_status(product, "success", tbdb_data)
-        Rails.logger.info "Successfully enriched product #{product.ean} with TBDB data"
+        Rails.logger.info "Successfully enriched product #{product.gtin} with TBDB data"
       else
         mark_enrichment_status(product, "not_found", "Product not found in TBDB database")
-        Rails.logger.info "Product #{product.ean} not found in TBDB database"
+        Rails.logger.info "Product #{product.gtin} not found in TBDB database"
       end
 
       product
 
     rescue => e
-      Rails.logger.error "Error enriching product #{product.ean}: #{e.message}"
+      Rails.logger.error "Error enriching product #{product.gtin}: #{e.message}"
       mark_enrichment_status(product, "error", e.message)
       raise e # Re-raise to trigger job retry mechanism
     end
@@ -36,19 +36,19 @@ class ProductEnrichmentService
 
   private
 
-  def fetch_tbdb_data(ean)
-    tbdb_response = @tbdb_client.get_product(ean)
+  def fetch_tbdb_data(gtin)
+    tbdb_response = @tbdb_service.get_product(gtin)
     return nil unless tbdb_response.present?
 
     # Extract data from response structure
     tbdb_data = tbdb_response["data"] if tbdb_response.key?("data")
     tbdb_data ||= tbdb_response
 
-    # Verify EAN matches (TBDB should return exact match)
-    if tbdb_data["gtin"] == ean
+    # Verify GTIN matches (TBDB should return exact match)
+    if tbdb_data["gtin"] == gtin
       tbdb_data
     else
-      Rails.logger.warn "TBDB returned product with different EAN: expected #{ean}, got #{tbdb_data['gtin']}"
+      Rails.logger.warn "TBDB returned product with different GTIN: expected #{gtin}, got #{tbdb_data['gtin']}"
       nil
     end
   end
@@ -87,26 +87,32 @@ class ProductEnrichmentService
     return if product.cover_image.attached? # Don't overwrite existing image
 
     begin
-      Rails.logger.info "Downloading cover image for product #{product.ean} from #{cover_url}"
+      Rails.logger.info "Downloading cover image for product #{product.gtin} from #{cover_url}"
 
       # Download the image
-      response = HTTP.follow.get(cover_url)
-      return unless response.status.success?
+      uri = URI.parse(cover_url)
+      http = Net::HTTP.new(uri.host, uri.port)
+      http.use_ssl = uri.scheme == 'https'
+      
+      request = Net::HTTP::Get.new(uri)
+      response = http.request(request)
+      
+      return unless response.is_a?(Net::HTTPSuccess)
 
       # Extract filename from URL or generate one
-      filename = extract_filename_from_url(cover_url) || "cover_#{product.ean}.jpg"
+      filename = extract_filename_from_url(cover_url) || "cover_#{product.gtin}.jpg"
 
       # Attach the image
       product.cover_image.attach(
-        io: StringIO.new(response.body.to_s),
+        io: StringIO.new(response.body),
         filename: filename,
-        content_type: response.content_type.mime_type
+        content_type: response['content-type'] || 'image/jpeg'
       )
 
-      Rails.logger.info "Successfully attached cover image for product #{product.ean}"
+      Rails.logger.info "Successfully attached cover image for product #{product.gtin}"
 
     rescue => e
-      Rails.logger.error "Failed to download cover image for product #{product.ean}: #{e.message}"
+      Rails.logger.error "Failed to download cover image for product #{product.gtin}: #{e.message}"
       # Don't re-raise - cover image failure shouldn't fail the whole enrichment
     end
   end

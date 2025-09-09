@@ -60,6 +60,31 @@ class UserController < ApplicationController
     end
   end
 
+  def update_api_token
+    @user = Current.user
+    token = params[:thebookdb_api_token].present? ? params[:thebookdb_api_token].strip : nil
+    
+    if token.present?
+      # Basic validation
+      if token.length < 10
+        redirect_to edit_profile_path, alert: "API token appears to be too short. Please check your token."
+        return
+      end
+      
+      @user.thebookdb_api_token = token
+      redirect_to profile_path, notice: "Personal API token updated successfully."
+    else
+      @user.thebookdb_api_token = nil
+      redirect_to profile_path, notice: "Personal API token removed. Using application default."
+    end
+  end
+
+  def delete_api_token
+    @user = Current.user
+    @user.thebookdb_api_token = nil
+    redirect_to profile_path, notice: "Personal API token removed. Using application default."
+  end
+
   private
 
   def user_params

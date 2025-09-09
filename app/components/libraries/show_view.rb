@@ -69,7 +69,7 @@ class Components::Libraries::ShowView < Components::Base
         end
         div(class: "flex items-center mt-2 text-sm text-gray-500") do
           span(class: "bg-gray-100 px-2 py-1 rounded") { product.product_type.humanize }
-          span(class: "ml-2") { "EAN: #{product.ean}" }
+          span(class: "ml-2") { "GTIN: #{product.gtin}" }
           if library_item.condition.present?
             span(class: "ml-2") { "Condition: #{library_item.condition}" }
           end
@@ -83,7 +83,7 @@ class Components::Libraries::ShowView < Components::Base
       end
 
       div(class: "flex items-center space-x-2") do
-        a(href: "/#{product.ean}", class: "text-blue-600 hover:text-blue-800") { "View" }
+        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800") { "View" }
         form(method: "post", action: "/library_items/#{library_item.id}", class: "inline") do
           input(type: "hidden", name: "_method", value: "delete")
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)

@@ -5,7 +5,7 @@ class Product < ApplicationRecord
 
   has_one_attached :cover_image
 
-  validates :ean, presence: true, uniqueness: true, format: { with: /\A\d{13}\z/, message: "must be 13 digits" }
+  validates :gtin, presence: true, uniqueness: true, format: { with: /\A\d{13}\z/, message: "must be 13 digits" }
   # validates :title, presence: true, on: :update
   validates :product_type, presence: true
 
@@ -23,14 +23,14 @@ class Product < ApplicationRecord
   scope :valid_barcodes, -> { where(valid_barcode: true) }
   scope :invalid_barcodes, -> { where(valid_barcode: false) }
 
-  # Find or create by EAN with basic product info
-  def self.find_or_create_by_ean(ean, basic_info = {})
-    # Validate EAN format
-    unless ean&.match?(/\A\d{13}\z/)
-      raise ArgumentError, "Invalid EAN-13 format: #{ean}"
+  # Find or create by GTIN with basic product info
+  def self.find_or_create_by_gtin(gtin, basic_info = {})
+    # Validate GTIN format
+    unless gtin&.match?(/\A\d{13}\z/)
+      raise ArgumentError, "Invalid GTIN format: #{gtin}"
     end
 
-    find_or_create_by(ean: ean) do |product|
+    find_or_create_by(gtin: gtin) do |product|
       product.title = basic_info[:title]
       product.author = basic_info[:author]
       product.publisher = basic_info[:publisher]
@@ -38,7 +38,7 @@ class Product < ApplicationRecord
     end
   end
 
-  def self.findd(...) = find_or_create_by_ean(...)
+  def self.findd(...) = find_or_create_by_gtin(...)
 
   # Check if product data has been successfully enriched from TBDB
   def enriched?
@@ -65,7 +65,7 @@ class Product < ApplicationRecord
 
   def enrich!
     update(tbdb_data: {})
-    ProductEnrichmentService.new(tbdb_client: TBDB.client).call(self)
+    ProductEnrichmentService.new.call(self)
   end
 
   # Library helpers
@@ -77,9 +77,9 @@ class Product < ApplicationRecord
     library_items.where(library: library).count
   end
 
-  # Safe title that falls back to EAN if title is not set
+  # Safe title that falls back to GTIN if title is not set
   def safe_title
-    title.presence || "Product #{ean}"
+    title.presence || "Product #{gtin}"
   end
 
   private
@@ -97,6 +97,6 @@ class Product < ApplicationRecord
 
   # Validate and set the valid_barcode flag
   def validate_barcode
-    self.valid_barcode = BarcodeValidationService.valid_barcode?(ean) if ean.present?
+    self.valid_barcode = BarcodeValidationService.valid_barcode?(gtin) if gtin.present?
   end
 end

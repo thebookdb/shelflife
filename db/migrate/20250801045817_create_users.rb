@@ -3,6 +3,9 @@ class CreateUsers < ActiveRecord::Migration[8.0]
     create_table :users, id: :string, default: -> { "ULID()" } do |t|
       t.string :email_address, null: false
       t.string :password_digest, null: false
+      t.string :name
+      t.json :user_settings, default: {}
+
 
       t.timestamps
     end
