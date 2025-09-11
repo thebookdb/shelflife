@@ -24,7 +24,7 @@ class Components::Libraries::ShowView < Components::Base
                 end
               end
 
-              a(href: libraries_path, class: "text-blue-600 hover:text-blue-800") { "← Back to Libraries" }
+              a(href: edit_library_path(@library), class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors") { "Edit Library" }
             end
           end
 
@@ -61,20 +61,42 @@ class Components::Libraries::ShowView < Components::Base
   def render_library_item(library_item)
     product = library_item.product
 
-    div(class: "bg-white rounded-lg shadow-md p-4 flex items-center justify-between") do
+    div(class: "bg-white rounded-lg shadow-md p-4 flex items-center gap-4") do
+      # Cover art section
+      div(class: "flex-shrink-0") do
+        if product.cover_image.attached?
+          img(
+            src: helpers.url_for(product.cover_image),
+            alt: product.safe_title,
+            class: "w-16 h-20 object-cover rounded shadow-sm"
+          )
+        elsif product.cover_image_url.present?
+          img(
+            src: product.cover_image_url,
+            alt: product.safe_title,
+            class: "w-16 h-20 object-cover rounded shadow-sm"
+          )
+        else
+          div(class: "w-16 h-20 bg-gray-200 rounded flex items-center justify-center") do
+            span(class: "text-2xl") { product_icon(product.product_type) }
+          end
+        end
+      end
+
+      # Product details section
       div(class: "flex-1") do
         h3(class: "font-semibold text-gray-900") { product.safe_title }
         if product.author.present?
           p(class: "text-gray-600") { "by #{product.author}" }
         end
-        div(class: "flex items-center mt-2 text-sm text-gray-500") do
+        div(class: "flex flex-wrap items-center mt-2 text-sm text-gray-500 gap-2") do
           span(class: "bg-gray-100 px-2 py-1 rounded") { product.product_type.humanize }
-          span(class: "ml-2") { "GTIN: #{product.gtin}" }
+          span { "GTIN: #{product.gtin}" }
           if library_item.condition.present?
-            span(class: "ml-2") { "Condition: #{library_item.condition}" }
+            span { "Condition: #{library_item.condition}" }
           end
           if library_item.location.present?
-            span(class: "ml-2") { "Location: #{library_item.location}" }
+            span { "Location: #{library_item.location}" }
           end
         end
         if library_item.notes.present?
@@ -82,8 +104,9 @@ class Components::Libraries::ShowView < Components::Base
         end
       end
 
-      div(class: "flex items-center space-x-2") do
-        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800") { "View" }
+      # Actions section
+      div(class: "flex flex-col items-end space-y-2") do
+        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
         form(method: "post", action: "/library_items/#{library_item.id}", class: "inline") do
           input(type: "hidden", name: "_method", value: "delete")
           input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
@@ -94,6 +117,15 @@ class Components::Libraries::ShowView < Components::Base
           ) { "Remove" }
         end
       end
+    end
+  end
+
+  def product_icon(product_type)
+    case product_type
+    when "book" then "📚"
+    when "dvd" then "💿"
+    when "board_game" then "🎲"
+    else "📦"
     end
   end
 end

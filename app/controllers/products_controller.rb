@@ -84,6 +84,15 @@ class ProductsController < ApplicationController
     )
   end
 
+  def destroy
+    @product = Product.find(params[:id])
+    product_title = @product.safe_title
+    
+    @product.destroy
+    
+    redirect_to root_path, notice: "#{product_title} and all associated scans have been deleted."
+  end
+
   private
 
   def find_or_create_product

@@ -47,4 +47,13 @@ class ScansController < ApplicationController
     Rails.logger.error "Failed to track scan: #{e.message}"
     head :unprocessable_entity
   end
+
+  def destroy
+    @scan = Current.user.scans.find(params[:id])
+    @scan.destroy
+    
+    redirect_to scans_path, notice: "Scan deleted successfully."
+  rescue ActiveRecord::RecordNotFound
+    redirect_to scans_path, alert: "Scan not found."
+  end
 end

@@ -14,13 +14,13 @@ module Components
         div(id: dom_id(@scan), class: "bg-white rounded-lg shadow-md p-4 flex items-center space-x-4") do
           # Product image or placeholder
           div(class: "flex-shrink-0") do
-            if @scan.product.cover_image.attached?
+            if @scan.product&.cover_image&.attached?
               img(
                 src: rails_blob_path(@scan.product.cover_image, only_path: true),
                 alt: @scan.product.safe_title,
                 class: "w-16 h-20 object-cover rounded"
               )
-            elsif @scan.product.cover_image_url.present?
+            elsif @scan.product&.cover_image_url.present?
               # Fallback to URL during transition period
               img(
                 src: @scan.product.cover_image_url,
@@ -36,18 +36,23 @@ module Components
 
           # Product details
           div(class: "flex-grow") do
-            h3(class: "font-semibold text-gray-900") do
-              a(href: "/#{@scan.product.gtin}", class: "hover:text-blue-600") do
-                @scan.product.safe_title
+            if @scan.product
+              h3(class: "font-semibold text-gray-900") do
+                a(href: "/#{@scan.product.gtin}", class: "hover:text-blue-600") do
+                  @scan.product.safe_title
+                end
               end
-            end
 
-            if @scan.product.author.present?
-              p(class: "text-sm text-gray-600") { "by #{@scan.product.author}" }
-            end
+              if @scan.product.author.present?
+                p(class: "text-sm text-gray-600") { "by #{@scan.product.author}" }
+              end
 
-            p(class: "text-xs text-gray-500 mt-1") do
-              "GTIN: #{@scan.product.gtin}"
+              p(class: "text-xs text-gray-500 mt-1") do
+                "GTIN: #{@scan.product.gtin}"
+              end
+            else
+              h3(class: "font-semibold text-red-600") { "Product not found" }
+              p(class: "text-xs text-gray-500 mt-1") { "This scan references a missing product" }
             end
 
             if @scan.user.present?
@@ -57,13 +62,26 @@ module Components
             end
           end
 
-          # Scan time
+          # Scan time and actions
           div(class: "flex-shrink-0 text-right") do
             p(class: "text-sm text-gray-500") do
               time_ago_in_words(@scan.scanned_at)
             end
             p(class: "text-xs text-gray-400") do
               @scan.scanned_at.strftime("%b %d, %Y")
+            end
+            
+            # Delete scan button
+            div(class: "mt-2") do
+              form(method: "post", action: scan_path(@scan), class: "inline") do
+                input(type: "hidden", name: "_method", value: "delete")
+                input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
+                button(
+                  type: "submit",
+                  class: "text-red-600 hover:text-red-800 text-xs",
+                  **{ "data-confirm": "Delete this scan?" }
+                ) { "Delete" }
+              end
             end
           end
         end

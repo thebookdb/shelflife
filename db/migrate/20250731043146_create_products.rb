@@ -14,6 +14,9 @@ class CreateProducts < ActiveRecord::Migration[8.0]
       t.string :genre
       t.string :product_type, null: false
       t.json :tbdb_data
+      t.text :notes
+      t.string :players
+      t.string :age_range
 
       t.timestamps
     end

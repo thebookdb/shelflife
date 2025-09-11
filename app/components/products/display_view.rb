@@ -1,7 +1,7 @@
 class Components::Products::DisplayView < Components::Base
   def initialize(product:, libraries: [])
     @product = product
-    @libraries = libraries
+    @libraries = libraries.presence || Library.all
   end
 
   def view_template
@@ -129,42 +129,20 @@ class Components::Products::DisplayView < Components::Base
 
         # Action Buttons
         div(class: "px-6 pb-6") do
-          div(class: "flex flex-col gap-3") do
-            # Add to Library/Wishlist buttons
-            unless @product.library_items.any? { |item| !item.library.wishlist? }
-              # Show "Add to Library" options
-              div(class: "grid grid-cols-2 gap-3") do
-                button(
-                  type: "button",
-                  data_action: "click->barcode-scanner#addToLibrary",
-                  data_library_name: "Home",
-                  class: "bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm"
-                ) { "📚 Add to Home" }
-
-                button(
-                  type: "button",
-                  data_action: "click->barcode-scanner#addToLibrary",
-                  data_library_name: "Work",
-                  class: "bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
-                ) { "🏢 Add to Work" }
-              end
-            end
-
-            # Wishlist button (always available)
-            unless @product.library_items.any? { |item| item.library.wishlist? }
+          # Library Selection Dropdown
+          render Components::Shared::LibraryDropdownView.new(product: @product)
+          
+          # Delete Product Button
+          div(class: "mt-4 pt-4 border-t border-gray-200") do
+            form(method: "post", action: product_path(@product), class: "inline") do
+              input(type: "hidden", name: "_method", value: "delete")
+              input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
               button(
-                type: "button",
-                data_action: "click->barcode-scanner#addToWishlist",
-                class: "bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors font-medium text-sm"
-              ) { "⭐ Add to Wishlist" }
+                type: "submit",
+                class: "bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors text-sm",
+                **{ "data-confirm": "Are you sure? This will delete the product and all associated scans permanently." }
+              ) { "Delete Product" }
             end
-
-            # Continue Scanning button
-            button(
-              type: "button",
-              data_action: "click->barcode-scanner#continueScan",
-              class: "bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors font-medium text-sm"
-            ) { "📱 Scan Another" }
           end
         end
 
@@ -205,4 +183,5 @@ class Components::Products::DisplayView < Components::Base
     @product.publication_date.present? ||
     @product.genre.present?
   end
+
 end

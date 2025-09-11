@@ -79,6 +79,20 @@ class ProductEnrichmentService
       attributes[:cover_image_url] = tbdb_data["cover_url"]
     end
 
+    # Extract format-specific fields from tbdb_data
+    if tbdb_data["package"].present?
+      case product.product_type
+      when "book"
+        attributes[:notes] = extract_book_notes(tbdb_data)
+      when "dvd"
+        attributes[:notes] = extract_media_notes(tbdb_data)
+      when "board_game"
+        attributes[:notes] = extract_game_notes(tbdb_data)
+        attributes[:players] = tbdb_data["players"] if tbdb_data["players"].present?
+        attributes[:age_range] = tbdb_data["age_range"] if tbdb_data["age_range"].present?
+      end
+    end
+
     # Update the product
     product.update!(attributes) if attributes.any?
   end
@@ -133,5 +147,47 @@ class ProductEnrichmentService
     File.basename(uri.path) if uri.path.present?
   rescue URI::InvalidURIError
     nil
+  end
+
+  def extract_book_notes(tbdb_data)
+    notes = []
+    notes << "Format: #{tbdb_data['package']}" if tbdb_data["package"].present?
+    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
+    notes.join(" • ")
+  end
+
+  def extract_media_notes(tbdb_data)
+    notes = []
+    notes << "Format: #{tbdb_data['package']}" if tbdb_data["package"].present?
+    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
+    
+    if tbdb_data["duration_seconds"].present?
+      duration = format_duration(tbdb_data["duration_seconds"])
+      notes << "Duration: #{duration}"
+    end
+    
+    notes.join(" • ")
+  end
+
+  def extract_game_notes(tbdb_data)
+    notes = []
+    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
+    notes.join(" • ")
+  end
+
+  def format_duration(seconds)
+    return nil unless seconds
+    
+    hours = seconds / 3600
+    minutes = (seconds % 3600) / 60
+    
+    if hours > 0
+      "#{hours}h #{minutes}m"
+    else
+      "#{minutes}m"
+    end
   end
 end

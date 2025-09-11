@@ -23,15 +23,10 @@ Rails.application.routes.draw do
   delete "/signout", to: "sessions#destroy", as: :signout
 
   # Product management routes
-  resources :products, only: [ :index, :show ] do
-    member do
-      post :add_to_library
-      delete :remove_from_library
-    end
-  end
+  resources :products, only: [ :index, :show, :destroy ]
 
   # Library management routes
-  resources :libraries, only: [ :index, :show ]
+  resources :libraries, only: [ :index, :show, :edit, :update ]
   resources :library_items, only: [ :create, :destroy ]
 
   # Scanner routes
@@ -40,7 +35,7 @@ Rails.application.routes.draw do
   post "/scanner/set_library", to: "scanners#set_library", as: :set_scanner_library
 
   # Scan routes
-  resources :scans, only: [ :index, :create ]
+  resources :scans, only: [ :index, :create, :destroy ]
 
   # Users route (user management)
   resources :users, only: [ :index, :show, :new, :create ]
