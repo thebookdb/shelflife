@@ -10,9 +10,9 @@ class CreateLibraryItems < ActiveRecord::Migration[8.0]
       
       # Acquisition tracking
       t.date :acquisition_date
-      t.string :acquisition_source
+      t.references :acquisition_source, null: true, foreign_key: true
       t.decimal :acquisition_price, precision: 8, scale: 2
-      t.string :ownership_status
+      t.references :ownership_status, null: true, foreign_key: true
       t.string :copy_identifier
       
       # Enhanced condition tracking
@@ -20,8 +20,8 @@ class CreateLibraryItems < ActiveRecord::Migration[8.0]
       t.date :last_condition_check
       t.text :damage_description
       
-      # Status and circulation
-      t.string :status
+      # Status and circulation  
+      t.references :item_status, null: true, foreign_key: true
       t.string :lent_to
       t.date :due_date
       

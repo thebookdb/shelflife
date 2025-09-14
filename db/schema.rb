@@ -11,6 +11,16 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
+  create_table "acquisition_sources", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_acquisition_sources_on_active"
+    t.index ["name"], name: "index_acquisition_sources_on_name", unique: true
+  end
+
   create_table "active_storage_attachments", force: :cascade do |t|
     t.string "name", null: false
     t.string "record_type", null: false
@@ -39,12 +49,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "item_statuses", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_item_statuses_on_active"
+    t.index ["name"], name: "index_item_statuses_on_name", unique: true
+  end
+
   create_table "libraries", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
+    t.boolean "virtual", default: false, null: false
+    t.integer "visibility", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_libraries_on_name", unique: true
+    t.index ["virtual"], name: "index_libraries_on_virtual"
   end
 
   create_table "library_items", force: :cascade do |t|
@@ -55,14 +78,14 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.text "notes"
     t.datetime "date_added", default: -> { "CURRENT_TIMESTAMP" }
     t.date "acquisition_date"
-    t.string "acquisition_source"
+    t.integer "acquisition_source_id"
     t.decimal "acquisition_price", precision: 8, scale: 2
-    t.string "ownership_status"
+    t.integer "ownership_status_id"
     t.string "copy_identifier"
     t.text "condition_notes"
     t.date "last_condition_check"
     t.text "damage_description"
-    t.string "status"
+    t.integer "item_status_id"
     t.string "lent_to"
     t.date "due_date"
     t.decimal "replacement_cost", precision: 8, scale: 2
@@ -74,9 +97,22 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.boolean "is_favorite", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.index ["acquisition_source_id"], name: "index_library_items_on_acquisition_source_id"
+    t.index ["item_status_id"], name: "index_library_items_on_item_status_id"
     t.index ["library_id"], name: "index_library_items_on_library_id"
+    t.index ["ownership_status_id"], name: "index_library_items_on_ownership_status_id"
     t.index ["product_id", "library_id"], name: "index_library_items_on_product_id_and_library_id"
     t.index ["product_id"], name: "index_library_items_on_product_id"
+  end
+
+  create_table "ownership_statuses", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_ownership_statuses_on_active"
+    t.index ["name"], name: "index_ownership_statuses_on_name", unique: true
   end
 
   create_table "products", force: :cascade do |t|
@@ -91,7 +127,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.string "cover_image_url"
     t.integer "pages"
     t.string "genre"
-    t.string "product_type", null: false
+    t.integer "product_type", default: 1, null: false
     t.json "tbdb_data"
     t.text "notes"
     t.string "players"
@@ -126,6 +162,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.string "email_address", null: false
     t.string "password_digest", null: false
     t.string "name"
+    t.boolean "admin", default: false, null: false
     t.json "user_settings", default: {}
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -134,7 +171,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "library_items", "acquisition_sources"
+  add_foreign_key "library_items", "item_statuses"
   add_foreign_key "library_items", "libraries"
+  add_foreign_key "library_items", "ownership_statuses"
   add_foreign_key "library_items", "products"
   add_foreign_key "scans", "products"
   add_foreign_key "scans", "users"

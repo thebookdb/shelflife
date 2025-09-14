@@ -44,6 +44,22 @@ class Components::Libraries::EditView < Components::Base
                 ) { @library.description }
               end
 
+              # Bulk barcodes field
+              div(class: "mb-6") do
+                label(for: "library_bulk_barcodes", class: "block text-sm font-medium text-gray-700 mb-2") { "Add Items by Barcode" }
+                textarea(
+                  id: "library_bulk_barcodes",
+                  name: "library[bulk_barcodes]",
+                  rows: "6",
+                  class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                  placeholder: "Paste GTINs here (one per line, space separated, or comma separated)..."
+                )
+                p(class: "mt-2 text-sm text-gray-500") do
+                  plain "Paste 13-digit barcodes to add items to this library. "
+                  plain "Example: 9780123456789, 9781234567890"
+                end
+              end
+
               # Action buttons
               div(class: "flex items-center justify-between") do
                 a(

@@ -26,7 +26,13 @@ Rails.application.routes.draw do
   resources :products, only: [ :index, :show, :destroy ]
 
   # Library management routes
-  resources :libraries, only: [ :index, :show, :edit, :update ]
+  resources :libraries, only: [ :index, :show, :edit, :update ] do
+    member do
+      get :import
+      post :import
+      get :export
+    end
+  end
   resources :library_items, only: [ :create, :destroy ]
 
   # Scanner routes

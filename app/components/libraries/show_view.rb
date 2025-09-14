@@ -1,8 +1,6 @@
 class Components::Libraries::ShowView < Components::Base
-  # include Rails.application.routes.url_helpers
-  include Pagy::Frontend
   include ActionView::Helpers::FormTagHelper
-
+  include Phlex::Rails::Helpers::TurboStreamFrom
   def initialize(library:, library_items:, pagy: nil)
     @library = library
     @library_items = library_items
@@ -12,6 +10,9 @@ class Components::Libraries::ShowView < Components::Base
   def view_template
     div(class: "min-h-screen bg-gray-50") do
       render Components::Shared::NavigationView.new
+      
+      # Subscribe to library updates for real-time product enrichment
+      turbo_stream_from "library_#{@library.id}"
 
       div(class: "pt-20 px-4") do
         div(class: "max-w-4xl mx-auto") do
@@ -24,23 +25,26 @@ class Components::Libraries::ShowView < Components::Base
                 end
               end
 
-              a(href: edit_library_path(@library), class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors") { "Edit Library" }
+              div(class: "flex gap-2") do
+                a(href: import_library_path(@library), class: "bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors") { "Import" }
+                a(href: export_library_path(@library, format: :csv), class: "bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors") { "Export CSV" }
+                a(href: edit_library_path(@library), class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors") { "Edit Library" }
+              end
             end
           end
 
           if @library_items.any?
+            # Pagination at top
+            render_pagination if @pagy && @pagy.pages > 1
+            
             div(class: "grid gap-4") do
               @library_items.each do |library_item|
-                render_library_item(library_item)
+                render Components::Libraries::LibraryItemView.new(library_item: library_item)
               end
             end
 
-            # Pagination
-            if @pagy && @pagy.pages > 1
-              div(class: "mt-8 flex justify-center") do
-                unsafe_raw pagy_nav(@pagy)
-              end
-            end
+            # Pagination at bottom
+            render_pagination if @pagy && @pagy.pages > 1
           else
             div(class: "bg-white rounded-lg shadow-md p-8 text-center") do
               div(class: "text-6xl mb-4") { "📚" }
@@ -58,74 +62,51 @@ class Components::Libraries::ShowView < Components::Base
 
   private
 
-  def render_library_item(library_item)
-    product = library_item.product
-
-    div(class: "bg-white rounded-lg shadow-md p-4 flex items-center gap-4") do
-      # Cover art section
-      div(class: "flex-shrink-0") do
-        if product.cover_image.attached?
-          img(
-            src: helpers.url_for(product.cover_image),
-            alt: product.safe_title,
-            class: "w-16 h-20 object-cover rounded shadow-sm"
-          )
-        elsif product.cover_image_url.present?
-          img(
-            src: product.cover_image_url,
-            alt: product.safe_title,
-            class: "w-16 h-20 object-cover rounded shadow-sm"
-          )
+  def render_pagination
+    div(class: "mt-8 flex justify-center") do
+      nav(class: "flex space-x-2") do
+        # Previous button
+        if @pagy.prev
+          a(href: library_path(@library, page: @pagy.prev),
+            class: "px-3 py-2 bg-white border rounded-md hover:bg-gray-50") do
+            "Previous"
+          end
         else
-          div(class: "w-16 h-20 bg-gray-200 rounded flex items-center justify-center") do
-            span(class: "text-2xl") { product_icon(product.product_type) }
+          span(class: "px-3 py-2 text-gray-300 bg-gray-100 border rounded-md cursor-not-allowed") do
+            "Previous"
           end
         end
-      end
 
-      # Product details section
-      div(class: "flex-1") do
-        h3(class: "font-semibold text-gray-900") { product.safe_title }
-        if product.author.present?
-          p(class: "text-gray-600") { "by #{product.author}" }
-        end
-        div(class: "flex flex-wrap items-center mt-2 text-sm text-gray-500 gap-2") do
-          span(class: "bg-gray-100 px-2 py-1 rounded") { product.product_type.humanize }
-          span { "GTIN: #{product.gtin}" }
-          if library_item.condition.present?
-            span { "Condition: #{library_item.condition}" }
-          end
-          if library_item.location.present?
-            span { "Location: #{library_item.location}" }
-          end
-        end
-        if library_item.notes.present?
-          p(class: "text-sm text-gray-600 mt-2") { library_item.notes }
-        end
-      end
+        # Page numbers
+        start_page = [@pagy.page - 2, 1].max
+        end_page = [@pagy.page + 2, @pagy.pages].min
 
-      # Actions section
-      div(class: "flex flex-col items-end space-y-2") do
-        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
-        form(method: "post", action: "/library_items/#{library_item.id}", class: "inline") do
-          input(type: "hidden", name: "_method", value: "delete")
-          input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
-          button(
-            type: "submit",
-            class: "text-red-600 hover:text-red-800",
-            **{ "data-confirm": "Remove from library?" }
-          ) { "Remove" }
+        (start_page..end_page).each do |page_num|
+          if page_num == @pagy.page
+            span(class: "px-3 py-2 text-white bg-blue-600 border rounded-md mr-1") do
+              page_num.to_s
+            end
+          else
+            a(href: library_path(@library, page: page_num),
+              class: "px-3 py-2 bg-white border rounded-md hover:bg-gray-50 mr-1") do
+              page_num.to_s
+            end
+          end
+        end
+
+        # Next button  
+        if @pagy.next
+          a(href: library_path(@library, page: @pagy.next),
+            class: "px-3 py-2 bg-white border rounded-md hover:bg-gray-50") do
+            "Next"
+          end
+        else
+          span(class: "px-3 py-2 text-gray-300 bg-gray-100 border rounded-md cursor-not-allowed") do
+            "Next"
+          end
         end
       end
     end
   end
 
-  def product_icon(product_type)
-    case product_type
-    when "book" then "📚"
-    when "dvd" then "💿"
-    when "board_game" then "🎲"
-    else "📦"
-    end
-  end
 end

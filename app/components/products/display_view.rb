@@ -96,7 +96,7 @@ class Components::Products::DisplayView < Components::Base
 
               div do
                 span(class: "text-gray-500") { "Type: " }
-                span(class: "font-medium capitalize") { @product.product_type.humanize }
+                span(class: "font-medium capitalize") { (@product.product_type || 'other').humanize }
               end
             end
           end
@@ -166,8 +166,17 @@ class Components::Products::DisplayView < Components::Base
   def product_icon
     case @product.product_type
     when "book" then "📚"
-    when "dvd" then "💿"
-    when "board_game" then "🎲"
+    when "video" then "💿"
+    when "ebook" then "📱"
+    when "audiobook" then "🎧"
+    when "toy" then "🧸"
+    when "lego" then "🧱"
+    when "pop" then "🎭"
+    when "graphic_novel" then "📖"
+    when "box_set" then "📦"
+    when "music" then "🎵"
+    when "ereader" then "📖"
+    when "table_top_game" then "🎲"
     else "📦"
     end
   end

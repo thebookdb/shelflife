@@ -1,6 +1,7 @@
 module Components
   module Scans
     class ScanItemView < Phlex::HTML
+      include Phlex::Rails::Helpers::FormWith
       include ActionView::Helpers::DateHelper
       include ActionView::RecordIdentifier
       include Phlex::Rails::Helpers::URLFor
@@ -16,7 +17,7 @@ module Components
           div(class: "flex-shrink-0") do
             if @scan.product&.cover_image&.attached?
               img(
-                src: rails_blob_path(@scan.product.cover_image, only_path: true),
+                src: safe_image_url(@scan.product.cover_image),
                 alt: @scan.product.safe_title,
                 class: "w-16 h-20 object-cover rounded"
               )
@@ -73,14 +74,11 @@ module Components
             
             # Delete scan button
             div(class: "mt-2") do
-              form(method: "post", action: scan_path(@scan), class: "inline") do
-                input(type: "hidden", name: "_method", value: "delete")
-                input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
-                button(
+              form_with url: scan_path(@scan), method: :delete, class: "inline", local: true do |f|
+                f.button "Delete", 
                   type: "submit",
                   class: "text-red-600 hover:text-red-800 text-xs",
-                  **{ "data-confirm": "Delete this scan?" }
-                ) { "Delete" }
+                  data: { confirm: "Delete this scan?" }
               end
             end
           end
@@ -88,6 +86,15 @@ module Components
       end
 
       private
+
+      def safe_image_url(attachment)
+        # Try to get the image URL, fallback to placeholder for background jobs
+        begin
+          rails_blob_path(attachment, only_path: true) if attachment.attached?
+        rescue
+          "/placeholder-image.jpg" # fallback for background jobs
+        end
+      end
 
       def time_ago_in_words(time)
         # Simple time ago implementation

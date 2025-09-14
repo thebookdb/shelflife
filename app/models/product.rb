@@ -14,9 +14,19 @@ class Product < ApplicationRecord
   before_save :validate_barcode
 
   enum :product_type, {
-    book: "book",
-    dvd: "dvd",
-    board_game: "board_game"
+    book: 1,
+    video: 2,
+    ebook: 3,
+    audiobook: 4,
+    toy: 5,
+    lego: 6,
+    pop: 7,
+    graphic_novel: 8,
+    box_set: 9,
+    music: 10,
+    ereader: 11,
+    table_top_game: 12,
+    other: 99
   }
 
   # Scopes for filtering
@@ -81,6 +91,8 @@ class Product < ApplicationRecord
   def safe_title
     title.presence || "Product #{gtin}"
   end
+
+  def self.bookland?(gtin) = gtin.starts_with?("978") ||gtin.starts_with?("979")
 
   private
 

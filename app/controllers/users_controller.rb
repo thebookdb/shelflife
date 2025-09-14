@@ -19,6 +19,8 @@ class UsersController < ApplicationController
   def create
     @user = User.new(user_params)
 
+    @user.admin = true if User.count.zero?
+
     if @user.save
       session = @user.sessions.create!(
         ip_address: request.remote_ip,

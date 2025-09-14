@@ -12,7 +12,7 @@ class CreateProducts < ActiveRecord::Migration[8.0]
       t.string :cover_image_url
       t.integer :pages
       t.string :genre
-      t.string :product_type, null: false
+      t.integer :product_type, null: false, default: 1
       t.json :tbdb_data
       t.text :notes
       t.string :players

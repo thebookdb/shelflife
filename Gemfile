@@ -75,3 +75,5 @@ gem "dotenv-rails", "~> 3.1"
 gem "sqids", "~> 0.2.2"
 
 gem "down", "~> 5.4"
+
+gem "csv", "~> 3.3"

@@ -36,6 +36,17 @@ class ProductEnrichmentService
 
   private
 
+  def broadcast_product_update(product)
+    # Broadcast to each library item that contains this product
+    product.library_items.find_each do |library_item|
+      Turbo::StreamsChannel.broadcast_replace_to(
+        "library_#{library_item.library_id}",
+        target: "library_item_#{library_item.id}",
+        html: Components::Libraries::LibraryItemView.new(library_item: library_item).call
+      )
+    end
+  end
+
   def fetch_tbdb_data(gtin)
     tbdb_response = @tbdb_service.get_product(gtin)
     return nil unless tbdb_response.present?
@@ -57,7 +68,7 @@ class ProductEnrichmentService
     attributes = {}
 
     # Update basic product info if missing or improve existing
-    attributes[:title] = tbdb_data["title"] if tbdb_data["title"].present? && (product.title.blank? || product.title.start_with?("Product "))
+    attributes[:title] = tbdb_data["title"] if tbdb_data["title"].present? && (product.title.blank? || product.title.start_with?("Unknown "))
     attributes[:subtitle] = tbdb_data["subtitle"] if tbdb_data["subtitle"].present?
     attributes[:author] = tbdb_data["authors"]&.first&.dig("name") if product.author.blank?
     attributes[:publisher] = tbdb_data["publisher"] if product.publisher.blank?
@@ -84,9 +95,9 @@ class ProductEnrichmentService
       case product.product_type
       when "book"
         attributes[:notes] = extract_book_notes(tbdb_data)
-      when "dvd"
+      when "video"
         attributes[:notes] = extract_media_notes(tbdb_data)
-      when "board_game"
+      when "table_top_game"
         attributes[:notes] = extract_game_notes(tbdb_data)
         attributes[:players] = tbdb_data["players"] if tbdb_data["players"].present?
         attributes[:age_range] = tbdb_data["age_range"] if tbdb_data["age_range"].present?
@@ -94,7 +105,11 @@ class ProductEnrichmentService
     end
 
     # Update the product
-    product.update!(attributes) if attributes.any?
+    if attributes.any?
+      product.update!(attributes)
+      # Broadcast the update to all subscribed library items
+      broadcast_product_update(product)
+    end
   end
 
   def attach_cover_image(product, cover_url)
@@ -140,6 +155,8 @@ class ProductEnrichmentService
     end
 
     product.update!(tbdb_data: tbdb_data)
+    # Broadcast update even for status changes (covers, enrichment status)
+    broadcast_product_update(product)
   end
 
   def extract_filename_from_url(url)
