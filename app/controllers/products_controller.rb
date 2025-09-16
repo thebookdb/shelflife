@@ -5,10 +5,10 @@ class ProductsController < ApplicationController
     # Get recent products from user's scans
     recent_products = if Current.user
       Product.joins(:scans)
-             .where(scans: { user: Current.user })
-             .order("scans.scanned_at DESC")
-             .distinct
-             .limit(5)
+        .where(scans: { user: Current.user })
+        .order("scans.scanned_at DESC")
+        .distinct
+        .limit(5)
     else
       []
     end
@@ -17,6 +17,9 @@ class ProductsController < ApplicationController
   end
 
   def show
+    # Trigger high-priority enrichment if product needs it
+    ProductDataFetchJob.set(queue: :high_priority).perform_later(@product, false) unless @product.enriched?
+
     # For GTIN URLs, render as Turbo Stream for scanner integration
     if request.headers["Accept"]&.include?("text/vnd.turbo-stream.html")
       render turbo_stream: turbo_stream.replace(
@@ -38,7 +41,9 @@ class ProductsController < ApplicationController
       # Check if already in this library
       existing_item = @product.library_items.find_by(library: library)
 
-      unless existing_item
+      if existing_item
+        flash[:alert] = "#{@product.title} is already in #{library.name}"
+      else
         @product.library_items.create!(
           library: library,
           condition: params[:condition] || "good",
@@ -46,8 +51,6 @@ class ProductsController < ApplicationController
         )
 
         flash[:notice] = "Added #{@product.title} to #{library.name}"
-      else
-        flash[:alert] = "#{@product.title} is already in #{library.name}"
       end
     else
       flash[:alert] = "Library not found"
@@ -87,9 +90,9 @@ class ProductsController < ApplicationController
   def destroy
     @product = Product.find(params[:id])
     product_title = @product.safe_title
-    
+
     @product.destroy
-    
+
     redirect_to root_path, notice: "#{product_title} and all associated scans have been deleted."
   end
 

@@ -12,6 +12,7 @@ class Components::Base < Phlex::HTML
   end
 
   register_element :turbo_frame
+  register_element :turbo_cable_stream_source
 
   if Rails.env.development?
     def before_template

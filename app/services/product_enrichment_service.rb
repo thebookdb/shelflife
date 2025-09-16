@@ -3,11 +3,11 @@ class ProductEnrichmentService
     @tbdb_service = tbdb_service || ShelfLife::TbdbService.new(user: user)
   end
 
-  def call(product)
+  def call(product, force = false)
     Rails.logger.info "Enriching product #{product.gtin} from TBDB"
 
     # Skip if already enriched
-    if product.enriched?
+    if product.enriched? && force == false
       Rails.logger.debug "Product #{product.gtin} already has TBDB data, skipping"
       return product
     end
@@ -26,7 +26,6 @@ class ProductEnrichmentService
       end
 
       product
-
     rescue => e
       Rails.logger.error "Error enriching product #{product.gtin}: #{e.message}"
       mark_enrichment_status(product, "error", e.message)
@@ -37,12 +36,22 @@ class ProductEnrichmentService
   private
 
   def broadcast_product_update(product)
+    # Broadcast to product show page for real-time updates
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "product_#{product.id}",
+      target: "product-display",
+      renderable: Components::Products::DisplayView.new(product: product, libraries: [])
+    )
+
     # Broadcast to each library item that contains this product
     product.library_items.find_each do |library_item|
+      view = ActionView::Base.new(ActionView::LookupContext.new(Rails.root.join("app/views")), {}, nil)
+      html = Components::Libraries::LibraryItemView.new(library_item: library_item).render_in(view)
+
       Turbo::StreamsChannel.broadcast_replace_to(
         "library_#{library_item.library_id}",
         target: "library_item_#{library_item.id}",
-        html: Components::Libraries::LibraryItemView.new(library_item: library_item).call
+        html: html
       )
     end
   end
@@ -59,7 +68,7 @@ class ProductEnrichmentService
     if tbdb_data["gtin"] == gtin
       tbdb_data
     else
-      Rails.logger.warn "TBDB returned product with different GTIN: expected #{gtin}, got #{tbdb_data['gtin']}"
+      Rails.logger.warn "TBDB returned product with different GTIN: expected #{gtin}, got #{tbdb_data["gtin"]}"
       nil
     end
   end
@@ -81,7 +90,7 @@ class ProductEnrichmentService
       begin
         attributes[:publication_date] = Date.parse(tbdb_data["publish_date"])
       rescue Date::Error
-        Rails.logger.warn "Could not parse publication date: #{tbdb_data['publish_date']}"
+        Rails.logger.warn "Could not parse publication date: #{tbdb_data["publish_date"]}"
       end
     end
 
@@ -120,7 +129,7 @@ class ProductEnrichmentService
 
       # Download the image using Down gem (handles redirects, proper headers, etc.)
       tempfile = Down.download(cover_url)
-      
+
       # Extract filename from URL or generate one
       filename = extract_filename_from_url(cover_url) || "cover_#{product.gtin}.jpg"
 
@@ -128,11 +137,10 @@ class ProductEnrichmentService
       product.cover_image.attach(
         io: tempfile,
         filename: filename,
-        content_type: tempfile.content_type || 'image/jpeg'
+        content_type: tempfile.content_type || "image/jpeg"
       )
 
       Rails.logger.info "Successfully attached cover image for product #{product.gtin}"
-
     rescue => e
       Rails.logger.error "Failed to download cover image for product #{product.gtin}: #{e.message}"
       # Don't re-raise - cover image failure shouldn't fail the whole enrichment
@@ -168,39 +176,39 @@ class ProductEnrichmentService
 
   def extract_book_notes(tbdb_data)
     notes = []
-    notes << "Format: #{tbdb_data['package']}" if tbdb_data["package"].present?
-    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
-    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
+    notes << "Format: #{tbdb_data["package"]}" if tbdb_data["package"].present?
+    notes << "Language: #{tbdb_data.dig("language", "name")}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data["region"]}" if tbdb_data["region"].present?
     notes.join(" • ")
   end
 
   def extract_media_notes(tbdb_data)
     notes = []
-    notes << "Format: #{tbdb_data['package']}" if tbdb_data["package"].present?
-    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
-    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
-    
+    notes << "Format: #{tbdb_data["package"]}" if tbdb_data["package"].present?
+    notes << "Language: #{tbdb_data.dig("language", "name")}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data["region"]}" if tbdb_data["region"].present?
+
     if tbdb_data["duration_seconds"].present?
       duration = format_duration(tbdb_data["duration_seconds"])
       notes << "Duration: #{duration}"
     end
-    
+
     notes.join(" • ")
   end
 
   def extract_game_notes(tbdb_data)
     notes = []
-    notes << "Language: #{tbdb_data.dig('language', 'name')}" if tbdb_data.dig("language", "name").present?
-    notes << "Region: #{tbdb_data['region']}" if tbdb_data["region"].present?
+    notes << "Language: #{tbdb_data.dig("language", "name")}" if tbdb_data.dig("language", "name").present?
+    notes << "Region: #{tbdb_data["region"]}" if tbdb_data["region"].present?
     notes.join(" • ")
   end
 
   def format_duration(seconds)
     return nil unless seconds
-    
+
     hours = seconds / 3600
     minutes = (seconds % 3600) / 60
-    
+
     if hours > 0
       "#{hours}h #{minutes}m"
     else

@@ -4,7 +4,7 @@ class ProductDataFetchJob < ApplicationJob
   retry_on StandardError, wait: 30.seconds, attempts: 3
   discard_on ActiveJob::DeserializationError
 
-  def perform(product)
-    ProductEnrichmentService.new.call(product)
+  def perform(product, force = false)
+    ProductEnrichmentService.new.call(product, force)
   end
 end

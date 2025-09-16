@@ -1,4 +1,5 @@
 class Components::Libraries::EditView < Components::Base
+  include Phlex::Rails::Helpers::FormAuthenticityToken
   def initialize(library:)
     @library = library
   end
@@ -17,7 +18,7 @@ class Components::Libraries::EditView < Components::Base
           div(class: "bg-white rounded-lg shadow-md p-6") do
             form(action: library_path(@library), method: "post") do
               input(type: "hidden", name: "_method", value: "patch")
-              input(type: "hidden", name: "authenticity_token", value: helpers.form_authenticity_token)
+              input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
 
               # Library name field
               div(class: "mb-6") do

@@ -70,7 +70,9 @@ class Product < ApplicationRecord
 
   # Queue job to fetch data from TBDB
   def enrich_from_tbdb!
-    ProductDataFetchJob.perform_later(self) unless enriched?
+    return if enriched?
+
+    ProductDataFetchJob.perform_later(self)
   end
 
   def enrich!
@@ -92,12 +94,20 @@ class Product < ApplicationRecord
     title.presence || "Product #{gtin}"
   end
 
-  def self.bookland?(gtin) = gtin.starts_with?("978") ||gtin.starts_with?("979")
+  def self.bookland?(gtin) = gtin.starts_with?("978") || gtin.starts_with?("979")
 
   private
 
   # Broadcast updates to all scans when product data changes
   def broadcast_scan_updates
+    # Broadcast to product show page for real-time updates
+    Turbo::StreamsChannel.broadcast_replace_to(
+      "product_#{id}",
+      target: "product-display",
+      renderable: Components::Products::DisplayView.new(product: self, libraries: [])
+    )
+
+    # Broadcast to scans page
     scans.includes(:product).find_each do |scan|
       scan.broadcast_replace_to(
         "scans",

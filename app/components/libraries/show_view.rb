@@ -12,9 +12,12 @@ class Components::Libraries::ShowView < Components::Base
       render Components::Shared::NavigationView.new
       
       # Subscribe to library updates for real-time product enrichment
-      turbo_stream_from "library_#{@library.id}"
+      turbo_cable_stream_source(
+        channel: "Turbo::StreamsChannel", 
+        signed_stream_name: Turbo::StreamsChannel.signed_stream_name("library_#{@library.id}")
+      )
 
-      div(class: "pt-20 px-4") do
+      div(class: "pt-20 px-4", id: "blahblahblah") do
         div(class: "max-w-4xl mx-auto") do
           div(class: "mb-8") do
             div(class: "flex items-center justify-between") do
