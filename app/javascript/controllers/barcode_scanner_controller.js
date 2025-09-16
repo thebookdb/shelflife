@@ -3,19 +3,13 @@ import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode"
 
 export default class extends Controller {
   static targets = ["portraitScanner", "landscapeScanner", "result", "portraitPlaceholder", "landscapePlaceholder", "startButton", "stopButton", "librarySelect", "scanResult", "libraryStatus", "orientationDisplay", "portraitLayout", "landscapeLayout", "portraitScannerArea", "landscapeScannerArea"]
-  static values = { 
+  static values = {
     scanning: { type: Boolean, default: false },
-    scannerPage: { type: Boolean, default: false },
     currentOrientation: { type: String, default: "portrait" }
   }
 
   connect() {
-    console.log("Barcode scanner controller connected", { scannerPage: this.scannerPageValue })
-    
-    // Initialize mobile-specific features for scanner page
-    if (this.scannerPageValue) {
-      this.initializeMobileFeatures()
-    }
+    console.log("Barcode scanner controller connected")
     
     // Load saved library preference
     this.loadLibraryPreference()
@@ -24,10 +18,6 @@ export default class extends Controller {
     this.setupOrientationDetection()
   }
   
-  initializeMobileFeatures() {
-    // Store original nav visibility for restoration
-    this.originalNavDisplay = null
-  }
   
   loadLibraryPreference() {
     // Add event listener to library dropdown
@@ -173,10 +163,8 @@ export default class extends Controller {
     console.log(`Starting adaptive scanning in ${this.currentOrientationValue} mode...`)
     this.scanningValue = true
     
-    // Hide navigation for mobile scanner page
-    if (this.scannerPageValue) {
-      this.hideNavigation()
-    }
+    // Hide navigation for mobile
+    this.hideNavigation()
     
     // Update UI state
     this.startButtonTarget.classList.add("hidden")
@@ -269,10 +257,8 @@ export default class extends Controller {
     console.log("Stopping scanner...")
     this.scanningValue = false
     
-    // Show navigation again for mobile scanner page
-    if (this.scannerPageValue) {
-      this.showNavigation()
-    }
+    // Show navigation again for mobile
+    this.showNavigation()
     
     // Update UI state
     this.startButtonTarget.classList.remove("hidden")
@@ -327,13 +313,8 @@ export default class extends Controller {
         navigator.vibrate(200)
       }
       
-      // Handle differently based on page type
-      if (this.scannerPageValue) {
-        this.handleScannerPageScan(decodedText)
-      } else {
-        // Original turbo stream approach
-        this.fetchProductData(decodedText)
-      }
+      // Always use the unified scan endpoint
+      this.submitScan(decodedText)
     } else {
       console.log("Invalid GTIN-13 format:", decodedText)
       this.showError(`Invalid barcode format: ${decodedText}`)
@@ -345,46 +326,42 @@ export default class extends Controller {
     // We don't need to log every failure as it's normal during scanning
   }
 
-  async fetchProductData(gtin) {
+  async submitScan(gtin) {
     try {
-      // First, get the product data
-      const response = await fetch(`/${gtin}`, {
-        method: 'GET',
-        headers: {
-          'Accept': 'text/vnd.turbo-stream.html',
-          'Content-Type': 'application/json'
-        }
-      })
-      
-      if (response.ok) {
-        const turboStreamData = await response.text()
-        // Let Turbo handle the stream response
-        Turbo.renderStreamMessage(turboStreamData)
-        
-        // Track the scan after successful product fetch
-        await this.trackScan(gtin)
-      } else {
-        this.showError('Failed to load product data')
-      }
-    } catch (error) {
-      console.error('Error fetching product:', error)
-      this.showError('Network error while loading product')
-    }
-  }
-
-  async trackScan(gtin) {
-    try {
-      await fetch('/scans', {
+      const response = await fetch('/scans', {
         method: 'POST',
         headers: {
+          'Accept': 'text/vnd.turbo-stream.html',
           'Content-Type': 'application/json',
           'X-CSRF-Token': this.getCSRFToken()
         },
         body: JSON.stringify({ gtin: gtin })
       })
+
+      if (response.ok) {
+        // Check if we got a turbo stream response
+        const contentType = response.headers.get('Content-Type')
+        if (contentType && contentType.includes('text/vnd.turbo-stream.html')) {
+          const turboStreamData = await response.text()
+          Turbo.renderStreamMessage(turboStreamData)
+        }
+
+        // Continue scanning after showing result briefly (for continuous scanning contexts)
+        setTimeout(() => {
+          if (this.scanningValue) {
+            const resultText = "Scanning... Point camera at barcode"
+            if (this.hasResultTarget) {
+              this.resultTarget.textContent = resultText
+              this.resultTarget.classList.remove("text-green-700", "text-red-600")
+            }
+          }
+        }, 2000)
+      } else {
+        this.showError('Failed to process scan')
+      }
     } catch (error) {
-      console.error('Error tracking scan:', error)
-      // Don't show error to user as this is background tracking
+      console.error('Error submitting scan:', error)
+      this.showError('Network error while processing scan')
     }
   }
   
@@ -482,22 +459,6 @@ export default class extends Controller {
     `
   }
 
-  // Scanner page specific methods
-  handleScannerPageScan(gtin) {
-    // Just track the scan - same as existing scanner
-    this.trackScan(gtin)
-    
-    // Continue scanning after a brief pause
-    setTimeout(() => {
-      if (this.scanningValue) {
-        const resultText = "Scanning... Point camera at barcode"
-        if (this.hasResultTarget) {
-          this.resultTarget.textContent = resultText
-          this.resultTarget.classList.remove("text-green-700", "text-red-600")
-        }
-      }
-    }, 2000)
-  }
   
   
   
@@ -505,7 +466,7 @@ export default class extends Controller {
   hideNavigation() {
     const nav = document.querySelector('nav')
     if (nav) {
-      this.originalNavDisplay = nav.style.display
+      this.originalNavDisplay = this.originalNavDisplay || nav.style.display
       nav.style.display = 'none'
       
       // Also remove the main margin-top since nav is hidden

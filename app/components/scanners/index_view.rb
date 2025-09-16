@@ -120,8 +120,7 @@ class Components::Scanners::IndexView < Components::Base
     # Adaptive scanner layout - break out of main container
     div(
       class: "fixed inset-0 top-16 bg-gray-50 overflow-hidden",
-      data_controller: "barcode-scanner",
-      data_barcode_scanner_scanner_page_value: "true"
+      data_controller: "barcode-scanner"
     ) do
       # Portrait Layout (mobile/vertical)
       div(

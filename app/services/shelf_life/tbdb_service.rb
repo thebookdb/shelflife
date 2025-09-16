@@ -35,7 +35,7 @@ module ShelfLife
       end
 
       Rails.cache.fetch(cache_key, expires_in: 25.minutes) do
-        TBDB::Client.new(api_token: token)
+        Tbdb::Client.new(api_token: token)
       end
     end
 

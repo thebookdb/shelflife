@@ -21,6 +21,9 @@ class ScansController < ApplicationController
       return
     end
 
+    # Trigger high-priority enrichment if product needs it
+    ProductDataFetchJob.set(queue: :high_priority).perform_later(product, false) unless product.enriched?
+
     # Track the scan
     Scan.track_scan(product, user: Current.user)
 
@@ -37,7 +40,16 @@ class ScansController < ApplicationController
       end
     end
 
-    head :created
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          "product-display",
+          Components::Products::DisplayView.new(product: product)
+        )
+      end
+      format.json { head :created }
+      format.html { head :created }
+    end
   rescue ActiveRecord::RecordNotFound
     head :not_found
   rescue ArgumentError => e

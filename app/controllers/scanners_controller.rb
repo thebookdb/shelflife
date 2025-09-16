@@ -4,7 +4,7 @@ class ScannersController < ApplicationController
     @recent_scans = Current.user.scans.includes(:product, :user).recent.last_n(10)
 
     # Get available libraries for the dropdown
-    @libraries = Library.user_libraries.order(:name) + [ Library.wishlist ].compact
+    @libraries = Library.all.order(:name)
 
     render Components::Scanners::IndexView.new(
       recent_scans: @recent_scans,
@@ -17,7 +17,7 @@ class ScannersController < ApplicationController
     @recent_scans = Current.user.scans.includes(:product, :user).recent.last_n(10)
 
     # Get available libraries for the dropdown
-    @libraries = Library.user_libraries.order(:name) + [ Library.wishlist ].compact
+    @libraries = Library.all.order(:name)
 
     render Components::Scanners::HorizontalView.new(
       recent_scans: @recent_scans,

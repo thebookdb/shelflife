@@ -157,10 +157,33 @@ class Components::Products::DisplayView < Components::Base
             # Data Enrichment Status
             if !@product.enriched?
               div(class: "px-6 pb-4") do
-                div(class: "bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center") do
-                  div(class: "animate-pulse flex items-center justify-center gap-2") do
-                    div(class: "w-3 h-3 bg-yellow-500 rounded-full")
-                    span(class: "text-sm text-yellow-700") { "Fetching additional details..." }
+                rate_limit_status = Rails.cache.read("tbdb_rate_limit_status")
+
+                if rate_limit_status&.dig(:limited)
+                  # Show rate limit message
+                  div(class: "bg-orange-50 border border-orange-200 rounded-lg p-3 text-center") do
+                    div(class: "flex items-center justify-center gap-2") do
+                      span(class: "text-sm text-orange-700") do
+                        plain "📚 API rate limit reached. Data fetching will resume automatically at "
+                        strong { rate_limit_status[:reset_time].strftime("%I:%M %p") }
+                        plain "."
+                      end
+                    end
+                  end
+                elsif @product.enrichment_failed?
+                  # Show enrichment error message
+                  div(class: "bg-red-50 border border-red-200 rounded-lg p-3 text-center") do
+                    span(class: "text-sm text-red-700") do
+                      plain "⚠️ Failed to fetch additional details. Jobs will retry automatically."
+                    end
+                  end
+                else
+                  # Show normal fetching message
+                  div(class: "bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center") do
+                    div(class: "animate-pulse flex items-center justify-center gap-2") do
+                      div(class: "w-3 h-3 bg-yellow-500 rounded-full")
+                      span(class: "text-sm text-yellow-700") { "Fetching additional details..." }
+                    end
                   end
                 end
               end

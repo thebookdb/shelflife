@@ -2,7 +2,11 @@ require "net/http"
 require "json"
 require "uri"
 
-module TBDB
+module Tbdb
+  class RateLimitError < StandardError
+    attr_accessor :reset_time, :retry_after
+  end
+
   class Client
     VERSION = "0.3"
 
@@ -159,14 +163,14 @@ module TBDB
         # Handle rate limiting with exponential backoff
         wait_time = calculate_backoff_time(retry_count)
         Rails.logger.warn "Rate limited (429), retrying in #{wait_time}s (attempt #{retry_count + 1}/3)"
-        
+
         begin
           error_data = JSON.parse(response.body)
           Rails.logger.debug "Rate limit details: #{error_data.inspect}"
         rescue JSON::ParserError
           # Ignore parse errors for rate limit response
         end
-        
+
         sleep(wait_time)
         return make_request(path, method: method, params: params, retry_count: retry_count + 1)
       else
@@ -177,7 +181,32 @@ module TBDB
         rescue JSON::ParserError
           Rails.logger.error "Response: #{response.body}"
         end
-        nil
+
+        # Handle final rate limit failure - raise custom exception with retry info
+        if response.code == "429"
+          # Extract rate limit reset time from headers or default to 1 hour
+          reset_time = response["X-RateLimit-Reset"]&.to_i || (Time.now + 1.hour).to_i
+          retry_after = response["Retry-After"]&.to_i || 3600
+
+          # Cache rate limit status for user feedback
+          Rails.cache.write(
+            "tbdb_rate_limit_status",
+            {
+              limited: true,
+              reset_time: Time.at(reset_time),
+              retry_after: retry_after,
+              message: "TBDB API rate limit exceeded. Retries will resume automatically."
+            },
+            expires_in: retry_after.seconds
+          )
+
+          error = RateLimitError.new("TBDB API rate limit exceeded after #{retry_count + 1} attempts")
+          error.reset_time = Time.at(reset_time) if reset_time
+          error.retry_after = retry_after
+          raise error
+        else
+          nil # Return nil for other errors (404, 400, etc.)
+        end
       end
     end
 

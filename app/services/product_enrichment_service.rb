@@ -40,13 +40,14 @@ class ProductEnrichmentService
     Turbo::StreamsChannel.broadcast_replace_to(
       "product_#{product.id}",
       target: "product-display",
-      renderable: Components::Products::DisplayView.new(product: product, libraries: [])
+      renderable: Components::Products::DisplayDataView.new(product: product, libraries: [])
     )
 
     # Broadcast to each library item that contains this product
     product.library_items.find_each do |library_item|
-      view = ActionView::Base.new(ActionView::LookupContext.new(Rails.root.join("app/views")), {}, nil)
-      html = Components::Libraries::LibraryItemView.new(library_item: library_item).render_in(view)
+      # Create a proper view context for rendering Phlex components
+      view_context = ApplicationController.new.view_context
+      html = Components::Libraries::LibraryItemDataView.new(library_item: library_item).render_in(view_context)
 
       Turbo::StreamsChannel.broadcast_replace_to(
         "library_#{library_item.library_id}",

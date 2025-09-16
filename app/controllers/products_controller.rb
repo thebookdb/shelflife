@@ -20,16 +20,8 @@ class ProductsController < ApplicationController
     # Trigger high-priority enrichment if product needs it
     ProductDataFetchJob.set(queue: :high_priority).perform_later(@product, false) unless @product.enriched?
 
-    # For GTIN URLs, render as Turbo Stream for scanner integration
-    if request.headers["Accept"]&.include?("text/vnd.turbo-stream.html")
-      render turbo_stream: turbo_stream.replace(
-        "product-display",
-        Components::Products::DisplayView.new(product: @product)
-      )
-    else
-      # Regular page view
-      render Components::Products::ShowView.new(product: @product)
-    end
+    # Regular page view
+    render Components::Products::ShowView.new(product: @product)
   end
 
   def add_to_library
