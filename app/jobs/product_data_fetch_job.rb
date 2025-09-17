@@ -31,11 +31,11 @@ class ProductDataFetchJob < ApplicationJob
   end
 
   def perform(product, force = false)
-    Rails.logger.info("Start product enrichment for #{product.gtin}")
+    Rails.logger.info("Start product enrichment for #{product.gtin} (job_id: #{job_id})")
     ProductEnrichmentService.new.call(product, force)
-    Rails.logger.info("Finish product enrichment for #{product.gtin}")
+    Rails.logger.info("Finish product enrichment for #{product.gtin} (job_id: #{job_id})")
   rescue => error
-    Rails.logger.error("ProductDataFetchJob error for #{product.gtin}: #{error.class} - #{error.message}")
+    Rails.logger.error("ProductDataFetchJob error for #{product.gtin} (job_id: #{job_id}): #{error.class} - #{error.message}")
     Rails.logger.error(error.backtrace&.first(10)&.join("\n"))
     raise
   end

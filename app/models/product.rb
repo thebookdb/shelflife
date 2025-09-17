@@ -72,7 +72,10 @@ class Product < ApplicationRecord
   def enrich_from_tbdb!
     return if enriched?
 
-    ProductDataFetchJob.perform_later(self)
+    Rails.logger.info("Enqueueing ProductDataFetchJob for product #{gtin}")
+    job = ProductDataFetchJob.perform_later(self)
+    Rails.logger.info("Enqueued ProductDataFetchJob with job_id: #{job.job_id} for product #{gtin}")
+    job
   end
 
   def enrich!
@@ -103,8 +106,8 @@ class Product < ApplicationRecord
     # Broadcast to product show page for real-time updates
     Turbo::StreamsChannel.broadcast_replace_to(
       "product_#{id}",
-      target: "product-display",
-      renderable: Components::Products::DisplayView.new(product: self, libraries: [])
+      target: "product-data",
+      renderable: Components::Products::DisplayDataView.new(product: self, libraries: [])
     )
 
     # Broadcast to scans page

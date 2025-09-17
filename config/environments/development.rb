@@ -58,6 +58,13 @@ Rails.application.configure do
   # Highlight code that enqueued background job in logs.
   config.active_job.verbose_enqueue_logs = true
 
+  # Add request ID to logs for better tracing
+  config.log_tags = [:request_id]
+
+  # Enhanced logging for job debugging
+  config.log_level = :debug
+  config.active_job.logger = Logger.new(STDOUT)
+
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true
 

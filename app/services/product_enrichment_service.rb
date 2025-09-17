@@ -36,11 +36,15 @@ class ProductEnrichmentService
   private
 
   def broadcast_product_update(product)
-    # Broadcast to product show page for real-time updates
+    # Broadcast to product show page for real-time updates (just the data portion)
+    # Create a proper view context for rendering Phlex components
+    view_context = ApplicationController.new.view_context
+    html = Components::Products::DisplayDataView.new(product: product, libraries: []).render_in(view_context)
+
     Turbo::StreamsChannel.broadcast_replace_to(
       "product_#{product.id}",
-      target: "product-display",
-      renderable: Components::Products::DisplayDataView.new(product: product, libraries: [])
+      target: "product-data",
+      html: html
     )
 
     # Broadcast to each library item that contains this product

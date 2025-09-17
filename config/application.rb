@@ -28,9 +28,5 @@ module ShelfLife
 
     # Add Phlex components to autoload paths
     config.autoload_paths << Rails.root.join("app/components")
-
-    config.active_job.queue_adapter = :solid_queue
-    config.solid_queue.connects_to = { database: { writing: :queue } }
-    config.hosts << "6a0738874e7c.ngrok-free.app"
   end
 end
