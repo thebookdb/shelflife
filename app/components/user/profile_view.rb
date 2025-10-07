@@ -101,32 +101,47 @@ class Components::User::ProfileView < Components::Base
 
             # API Configuration Section
             div(class: "px-6 py-6 border-t border-gray-200") do
-              h3(class: "text-lg font-medium text-gray-900 mb-6") { "API Configuration" }
-              
-              div(class: "space-y-4") do
+              h3(class: "text-lg font-medium text-gray-900 mb-6") { "TBDB Integration" }
+
+              div(class: "space-y-6") do
+                # OAuth Connection Status
                 div do
-                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "TheBookDB API Token" }
-                  dd(class: "text-xs text-gray-500 mb-3") { "Personal API token for accessing TheBookDB.info service. Falls back to application default if not set." }
-                  
-                  if @user.has_thebookdb_api_token?
-                    div(class: "text-sm text-gray-900 font-mono bg-gray-50 px-3 py-2 rounded border") do
-                      token = @user.thebookdb_api_token
-                      masked_token = token[0..7] + "..." + token[-4..-1]
-                      masked_token
+                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "OAuth Connection" }
+                  dd(class: "text-xs text-gray-500 mb-3") { "Secure OAuth connection to TheBookDB.info for enhanced product data access." }
+
+                  if @user.has_oauth_connection?
+                    div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
+                      div do
+                        div(class: "text-sm font-medium text-green-800") { "Connected to TBDB" }
+                        if @user.oauth_token_expired?
+                          div(class: "text-xs text-amber-600 mt-1") { "Token expired - will refresh automatically" }
+                        else
+                          div(class: "text-xs text-green-600 mt-1") { "Active connection" }
+                        end
+                      end
+                      a(
+                        href: auth_tbdb_disconnect_path,
+                        data: {
+                          turbo_method: "delete",
+                          turbo_confirm: "Are you sure you want to disconnect from TBDB?"
+                        },
+                        class: "text-sm text-red-600 hover:text-red-700 font-medium"
+                      ) { "Disconnect" }
                     end
-                    div(class: "text-xs text-green-600 mt-1") { "Using personal token" }
                   else
-                    if ENV["TBDB_API_TOKEN"].present?
-                      div(class: "text-sm text-gray-600 bg-gray-50 px-3 py-2 rounded border") do
-                        "Using application default"
+                    div(class: "flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded") do
+                      div do
+                        div(class: "text-sm font-medium text-gray-700") { "Not Connected" }
+                        div(class: "text-xs text-gray-500 mt-1") { "Connect for seamless API access" }
                       end
-                    else
-                      div(class: "text-sm text-red-600 bg-red-50 px-3 py-2 rounded border border-red-200") do
-                        "No token configured"
-                      end
+                      a(
+                        href: auth_tbdb_path,
+                        class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                      ) { "Connect to TBDB" }
                     end
                   end
                 end
+
               end
             end
 

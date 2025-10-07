@@ -28,14 +28,23 @@ module ShelfLife
 
     def get_or_create_client(token, user)
       # Create a cache key based on user ID or 'system' for ENV token
+      # Include OAuth status in cache key to avoid conflicts
       cache_key = if user&.id
-        "tbdb_client:#{user.id}"
+        oauth_status = user.has_oauth_connection? ? "oauth" : "api"
+        "tbdb_client:#{user.id}:#{oauth_status}"
       else
         "tbdb_client:system"
       end
 
       Rails.cache.fetch(cache_key, expires_in: 25.minutes) do
-        Tbdb::Client.new(api_token: token)
+        if user&.has_oauth_connection?
+          Tbdb::Client.new(
+            oauth_token: user.oauth_access_token,
+            user: user
+          )
+        else
+          Tbdb::Client.new(api_token: token)
+        end
       end
     end
 

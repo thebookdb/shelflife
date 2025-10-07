@@ -16,6 +16,18 @@ class Components::Libraries::EditView < Components::Base
           end
 
           div(class: "bg-white rounded-lg shadow-md p-6") do
+            # Display errors if any
+            if @library.errors.any?
+              div(class: "mb-6 bg-red-50 border border-red-200 rounded-lg p-4") do
+                h3(class: "text-red-800 font-semibold mb-2") { "Error#{@library.errors.count > 1 ? 's' : ''}" }
+                ul(class: "list-disc list-inside text-red-700 text-sm") do
+                  @library.errors.full_messages.each do |message|
+                    li { message }
+                  end
+                end
+              end
+            end
+
             form(action: library_path(@library), method: "post") do
               input(type: "hidden", name: "_method", value: "patch")
               input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)

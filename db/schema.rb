@@ -164,6 +164,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.string "name"
     t.boolean "admin", default: false, null: false
     t.json "user_settings", default: {}
+    t.string "oauth_client_id"
+    t.string "oauth_client_secret"
+    t.string "oauth_access_token"
+    t.string "oauth_refresh_token"
+    t.datetime "oauth_expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true

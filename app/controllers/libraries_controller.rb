@@ -90,7 +90,7 @@ class LibrariesController < ApplicationController
   private
 
   def library_params
-    params.require(:library).permit(:name, :description, :bulk_barcodes)
+    params.expect(library: [:name, :description, :bulk_barcodes])
   end
 
   def process_bulk_barcodes(library, bulk_barcodes_text)
@@ -114,8 +114,7 @@ class LibrariesController < ApplicationController
       # Create library item
       LibraryItem.create!(
         library: library,
-        product: product,
-        user: Current.user
+        product: product
       )
       
       # Create scan record for the user
@@ -141,14 +140,6 @@ class LibrariesController < ApplicationController
   end
 
   def find_or_create_product(gtin)
-    product = Product.find_by(gtin: gtin)
-    return product if product
-    
-    # Create new product with minimal data
-    Product.create!(
-      gtin: gtin,
-      title: "Unknown Product (#{gtin})",
-      product_type: 'other'
-    )
+    Product.findd(gtin, title: "Unknown Product (#{gtin})", product_type: 'other')
   end
 end

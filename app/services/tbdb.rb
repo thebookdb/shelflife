@@ -13,16 +13,21 @@ module Tbdb
     # Use production TBDB API by default (will move to api.tbdb.info soon)
     DEFAULT_BASE_URI = ENV.fetch("TBDB_API_URI", "https://api.thebookdb.info").freeze
 
-    attr_reader :api_token, :jwt_token, :jwt_expires_at, :base_uri, :last_request_time
+    attr_reader :api_token, :oauth_token, :user, :jwt_token, :jwt_expires_at, :base_uri, :last_request_time
 
-    def initialize(api_token: ENV["TBDB_API_TOKEN"], base_uri: DEFAULT_BASE_URI)
+    def initialize(api_token: nil, oauth_token: nil, user: nil, base_uri: DEFAULT_BASE_URI)
       @api_token = api_token
+      @oauth_token = oauth_token
+      @user = user
       @base_uri = URI(base_uri)
       @jwt_token = nil
       @jwt_expires_at = nil
       @last_request_time = nil
 
-      validate_api_token!
+      # Determine the token to use
+      @effective_token = determine_effective_token
+
+      validate_token!
       ensure_valid_jwt
     end
 
@@ -54,9 +59,36 @@ module Tbdb
 
     private
 
-    def validate_api_token!
-      if @api_token.nil? || @api_token.empty?
-        raise ArgumentError, "TBDB_API_TOKEN environment variable is required"
+    def determine_effective_token
+      # Priority: OAuth token > API token > ENV token
+      if @oauth_token.present?
+        refresh_oauth_token_if_needed
+        @oauth_token
+      elsif @api_token.present?
+        @api_token
+      else
+        ENV["TBDB_API_TOKEN"]
+      end
+    end
+
+    def refresh_oauth_token_if_needed
+      return unless @user&.oauth_token_expired?
+
+      Rails.logger.debug "OAuth token expired, attempting refresh..."
+      oauth_service = TbdbOauthService.new(@user)
+
+      if oauth_service.refresh_access_token
+        @oauth_token = @user.oauth_access_token
+        Rails.logger.debug "OAuth token refreshed successfully"
+      else
+        Rails.logger.warn "OAuth token refresh failed, falling back to API token"
+        @oauth_token = nil
+      end
+    end
+
+    def validate_token!
+      if @effective_token.nil? || @effective_token.empty?
+        raise ArgumentError, "No valid token available (OAuth, API, or ENV)"
       end
     end
 
@@ -77,7 +109,7 @@ module Tbdb
       uri = URI.join(@base_uri.to_s.chomp("/") + "/", "api/tokens/exchange")
 
       request = Net::HTTP::Post.new(uri)
-      request["Authorization"] = "Bearer #{@api_token}"
+      request["Authorization"] = "Bearer #{@effective_token}"
       request["Content-Type"] = "application/json"
       request["Accept"] = "application/json"
       request["User-Agent"] = user_agent

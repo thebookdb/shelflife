@@ -62,6 +62,11 @@ Rails.application.routes.draw do
   get "/profile/change_password", to: "user#change_password", as: :change_password
   patch "/profile/update_password", to: "user#update_password"
 
+  # OAuth routes
+  get "/auth/tbdb", to: "oauth#tbdb", as: :auth_tbdb
+  get "/auth/tbdb/callback", to: "oauth#tbdb_callback", as: :auth_tbdb_callback
+  delete "/auth/tbdb/disconnect", to: "oauth#tbdb_disconnect", as: :auth_tbdb_disconnect
+
   # API routes
   namespace :api do
     namespace :v1 do

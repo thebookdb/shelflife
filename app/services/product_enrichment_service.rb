@@ -84,7 +84,7 @@ class ProductEnrichmentService
     # Update basic product info if missing or improve existing
     attributes[:title] = tbdb_data["title"] if tbdb_data["title"].present? && (product.title.blank? || product.title.start_with?("Unknown "))
     attributes[:subtitle] = tbdb_data["subtitle"] if tbdb_data["subtitle"].present?
-    attributes[:author] = tbdb_data["authors"]&.first&.dig("name") if product.author.blank?
+    attributes[:author] = tbdb_data["author"] if product.author.blank?
     attributes[:publisher] = tbdb_data["publisher"] if product.publisher.blank?
     attributes[:description] = tbdb_data["description"] if product.description.blank?
     attributes[:pages] = tbdb_data["pages"] if product.pages.blank?
