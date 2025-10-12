@@ -1,6 +1,6 @@
 class ProductEnrichmentService
-  def initialize(tbdb_service: nil, user: nil)
-    @tbdb_service = tbdb_service || ShelfLife::TbdbService.new(user: user)
+  def initialize(tbdb_service: nil)
+    @tbdb_service = tbdb_service || ShelfLife::TbdbService.new
   end
 
   def call(product, force = false)

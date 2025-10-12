@@ -1,8 +1,11 @@
 class Components::User::ProfileView < Components::Base
+  include Phlex::Rails::Helpers::TimeAgoInWords
   # include Rails.application.routes.url_helpers
 
-  def initialize(user:)
+  def initialize(user:, connection:, quota_status: nil)
     @user = user
+    @connection = connection
+    @quota_status = quota_status
   end
 
   def view_template
@@ -106,24 +109,53 @@ class Components::User::ProfileView < Components::Base
               div(class: "space-y-6") do
                 # OAuth Connection Status
                 div do
-                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "OAuth Connection" }
-                  dd(class: "text-xs text-gray-500 mb-3") { "Secure OAuth connection to TheBookDB.info for enhanced product data access." }
+                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "System Connection" }
+                  dd(class: "text-xs text-gray-500 mb-3") { "Shared OAuth connection to TheBookDB.info for product data lookups." }
 
-                  if @user.has_oauth_connection?
+                  if @connection.status == 'invalid'
+                    # Show invalid connection state with error message
+                    div(class: "space-y-3") do
+                      div(class: "flex items-start justify-between p-3 bg-red-50 border border-red-200 rounded") do
+                        div(class: "flex-1") do
+                          div(class: "text-sm font-medium text-red-800") { "Connection Invalid" }
+                          if @connection.last_error.present?
+                            div(class: "text-xs text-red-600 mt-1") { @connection.last_error }
+                          end
+                          if @connection.api_base_url.present?
+                            div(class: "text-xs text-red-500 mt-1") { "OAuth tokens from: #{@connection.api_base_url}" }
+                          end
+                        end
+                        a(
+                          href: auth_tbdb_path,
+                          class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
+                        ) { "Reconnect" }
+                      end
+                    end
+                  elsif @connection.connected?
                     div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
                       div do
                         div(class: "text-sm font-medium text-green-800") { "Connected to TBDB" }
-                        if @user.oauth_token_expired?
-                          div(class: "text-xs text-amber-600 mt-1") { "Token expired - will refresh automatically" }
-                        else
-                          div(class: "text-xs text-green-600 mt-1") { "Active connection" }
+                        div(class: "text-xs text-green-600 mt-1") do
+                          if @connection.api_base_url.present?
+                            plain "#{@connection.api_base_url} • "
+                          end
+                          if @connection.token_expired?
+                            plain "Auto-refreshing token as needed"
+                          else
+                            plain "Active • Expires #{@connection.expires_at.strftime('%b %d at %I:%M %p')}"
+                          end
+                        end
+                        if @connection.verified_at.present?
+                          div(class: "text-xs text-green-500 mt-1") do
+                            plain "Last verified #{time_ago_in_words(@connection.verified_at)} ago"
+                          end
                         end
                       end
                       a(
                         href: auth_tbdb_disconnect_path,
                         data: {
                           turbo_method: "delete",
-                          turbo_confirm: "Are you sure you want to disconnect from TBDB?"
+                          turbo_confirm: "Are you sure you want to disconnect from TBDB? This will affect all users."
                         },
                         class: "text-sm text-red-600 hover:text-red-700 font-medium"
                       ) { "Disconnect" }
@@ -132,12 +164,48 @@ class Components::User::ProfileView < Components::Base
                     div(class: "flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded") do
                       div do
                         div(class: "text-sm font-medium text-gray-700") { "Not Connected" }
-                        div(class: "text-xs text-gray-500 mt-1") { "Connect for seamless API access" }
+                        div(class: "text-xs text-gray-500 mt-1") { "Connect for product data access" }
                       end
                       a(
                         href: auth_tbdb_path,
                         class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
                       ) { "Connect to TBDB" }
+                    end
+                  end
+                end
+
+                # API Quota Status
+                if @quota_status
+                  div(class: "pt-6 border-t border-gray-200") do
+                    dt(class: "text-sm font-medium text-gray-700 mb-2") { "Daily API Quota" }
+                    dd(class: "text-xs text-gray-500 mb-3") { "Your current TBDB API usage for today" }
+
+                    # Quota progress bar
+                    div(class: "space-y-2") do
+                      div(class: "flex items-center justify-between text-sm") do
+                        span(class: "font-medium text-gray-900") do
+                          plain "#{@quota_status[:remaining]} / #{@quota_status[:limit]} requests remaining"
+                        end
+                        span(class: quota_percentage_color) do
+                          plain "#{@quota_status[:percentage]}%"
+                        end
+                      end
+
+                      # Progress bar
+                      div(class: "w-full bg-gray-200 rounded-full h-2") do
+                        div(
+                          class: "h-2 rounded-full #{quota_bar_color}",
+                          style: "width: #{@quota_status[:percentage]}%"
+                        )
+                      end
+
+                      # Reset time
+                      if @quota_status[:reset_at]
+                        div(class: "flex items-center justify-between text-xs text-gray-500") do
+                          span { "Resets at #{@quota_status[:reset_at].strftime('%I:%M %p %Z')}" }
+                          span { "Updated #{time_ago_in_words(@quota_status[:updated_at])} ago" }
+                        end
+                      end
                     end
                   end
                 end
@@ -162,6 +230,34 @@ class Components::User::ProfileView < Components::Base
           end
         end
       end
+    end
+  end
+
+  private
+
+  def quota_percentage_color
+    return "text-gray-600" unless @quota_status
+
+    percentage = @quota_status[:percentage]
+    if percentage >= 50
+      "text-green-600 font-medium"
+    elsif percentage >= 25
+      "text-amber-600 font-medium"
+    else
+      "text-red-600 font-medium"
+    end
+  end
+
+  def quota_bar_color
+    return "bg-gray-400" unless @quota_status
+
+    percentage = @quota_status[:percentage]
+    if percentage >= 50
+      "bg-green-500"
+    elsif percentage >= 25
+      "bg-amber-500"
+    else
+      "bg-red-500"
     end
   end
 end

@@ -115,20 +115,59 @@ class Components::Products::DisplayDataView < Components::Base
     if !@product.enriched?
       div(class: "px-6 pb-4") do
         rate_limit_status = Rails.cache.read("tbdb_rate_limit_status")
+        enrichment_status = @product.tbdb_data&.dig("status")
 
-        if rate_limit_status&.dig(:limited)
+        if enrichment_status == "authentication_failed"
+          # Show authentication error with reconnect link
+          div(class: "bg-red-50 border border-red-200 rounded-lg p-3") do
+            div(class: "flex items-start justify-between gap-3") do
+              div(class: "flex-1") do
+                div(class: "text-sm font-medium text-red-800") { "❌ TBDB Connection Required" }
+                div(class: "text-xs text-red-600 mt-1") do
+                  plain @product.tbdb_data&.dig("message") || "Authentication failed. Please reconnect to TBDB."
+                end
+              end
+              a(
+                href: "/profile",
+                class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
+              ) { "View Connection" }
+            end
+          end
+        elsif enrichment_status == "quota_exhausted"
+          # Show quota exhausted message with retry time
+          retry_at = @product.tbdb_data&.dig("retry_at")
+          div(class: "bg-purple-50 border border-purple-200 rounded-lg p-3 text-center") do
+            div(class: "text-sm text-purple-700") do
+              plain "📊 Daily API quota exhausted. "
+              if retry_at
+                plain "Will retry at #{Time.parse(retry_at).strftime('%I:%M %p')}."
+              else
+                plain "Will retry automatically when quota resets."
+              end
+            end
+          end
+        elsif enrichment_status == "rate_limited" || rate_limit_status&.dig(:limited)
           # Show rate limit message
+          retry_at = @product.tbdb_data&.dig("retry_at") || rate_limit_status&.dig(:reset_time)
           div(class: "bg-orange-50 border border-orange-200 rounded-lg p-3 text-center") do
             div(class: "flex items-center justify-center gap-2") do
               span(class: "text-sm text-orange-700") do
-                plain "📚 API rate limit reached. Data fetching will resume automatically at "
-                strong { rate_limit_status[:reset_time].strftime("%I:%M %p") }
+                plain "📚 API rate limit reached. Data fetching will resume "
+                if retry_at
+                  if retry_at.is_a?(String)
+                    plain "at #{Time.parse(retry_at).strftime('%I:%M %p')}"
+                  else
+                    plain "at #{retry_at.strftime('%I:%M %p')}"
+                  end
+                else
+                  plain "automatically"
+                end
                 plain "."
               end
             end
           end
         elsif @product.enrichment_failed?
-          # Show enrichment error message
+          # Show generic enrichment error message
           div(class: "bg-red-50 border border-red-200 rounded-lg p-3 text-center") do
             span(class: "text-sm text-red-700") do
               plain "⚠️ Failed to fetch additional details. Jobs will retry automatically."

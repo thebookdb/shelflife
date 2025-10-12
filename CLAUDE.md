@@ -125,16 +125,19 @@ User-specific tracking of barcode scans:
 
 ### Development Notes
 - Uses Rails 8's new defaults with Solid adapters for caching, queuing, and cables
+  - **Solid Cache**: Configured with `config.solid_cache.connects_to = { database: { writing: :cache } }`
+  - **Solid Queue**: Configured with `config.solid_queue.connects_to = { database: { writing: :queue } }`
+  - Separate SQLite databases for cache, queue, and cable
 - **Phlex 2 components** replace traditional ERB views - use `plain` for mixed text/HTML content
 - Stimulus controllers handle all JavaScript interactions
 - esbuild handles JavaScript bundling, Tailwind 4 handles CSS compilation
 - SQLite for development and testing (multiple databases for different Rails features)
 - **Data Separation**: Product = bibliographic data, LibraryItem = physical copy tracking
 - **Auto-enrichment**: TBDB API data automatically populates format fields during product creation
-- **ULID Primary Keys**: All models use ULID strings as primary keys (not integers)
-- **Foreign Keys**: All foreign key references are strings pointing to ULID primary keys
+- **Primary Keys**: Standard Rails integer auto-increment primary keys (no ULIDs)
 - **Book Identification**: Books identified by EAN-13 barcodes (13-digit strings)
 - **Image Handling**: Products have `cover_image` (Active Storage) and `cover_image_url` fields
+- **TBDB Integration**: Single shared `TbdbConnection` singleton for OAuth (not per-user)
 - Pagination handled by Pagy gem
 - the MCP gitea is available for the repository dkam/shelf-life for git actions
 

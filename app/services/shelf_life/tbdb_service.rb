@@ -4,10 +4,8 @@ module ShelfLife
   class TbdbService
     attr_reader :client
 
-    def initialize(user: nil)
-      @user = user
-      token = determine_api_token(user)
-      @client = get_or_create_client(token, user)
+    def initialize
+      @client = get_or_create_client
     end
 
     # Delegate common methods to the TBDB client
@@ -19,41 +17,22 @@ module ShelfLife
       client.search_products(query, options)
     end
 
-    # Convenience class method that uses Current.user
-    def self.current_user_client
-      new(user: Current.user)
+    # Convenience class method
+    def self.client
+      new.client
     end
 
     private
 
-    def get_or_create_client(token, user)
-      # Create a cache key based on user ID or 'system' for ENV token
-      # Include OAuth status in cache key to avoid conflicts
-      cache_key = if user&.id
-        oauth_status = user.has_oauth_connection? ? "oauth" : "api"
-        "tbdb_client:#{user.id}:#{oauth_status}"
-      else
-        "tbdb_client:system"
-      end
+    def get_or_create_client
+      connection = TbdbConnection.instance
+
+      # Create cache key based on connection status and updated timestamp
+      # This ensures cache is invalidated when connection changes
+      cache_key = "tbdb_client:#{connection.status}:#{connection.updated_at.to_i}"
 
       Rails.cache.fetch(cache_key, expires_in: 25.minutes) do
-        if user&.has_oauth_connection?
-          Tbdb::Client.new(
-            oauth_token: user.oauth_access_token,
-            user: user
-          )
-        else
-          Tbdb::Client.new(api_token: token)
-        end
-      end
-    end
-
-    def determine_api_token(user)
-      if user&.respond_to?(:effective_thebookdb_api_token)
-        user.effective_thebookdb_api_token
-      else
-        # Fallback to Current.user if no user provided, then ENV
-        Current.user&.effective_thebookdb_api_token || ENV["TBDB_API_TOKEN"]
+        Tbdb::Client.new
       end
     end
   end

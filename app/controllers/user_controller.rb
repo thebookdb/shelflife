@@ -1,7 +1,21 @@
 class UserController < ApplicationController
   def show
     @user = Current.user
-    render Components::User::ProfileView.new(user: @user)
+    @connection = TbdbConnection.instance
+    quota_status = Tbdb.quota_status
+
+    # Fetch fresh quota from /me if cache is empty and system has OAuth connection
+    if quota_status.nil? && @connection.connected?
+      begin
+        client = Tbdb::Client.new
+        client.get_me  # This will populate the cache via response headers
+        quota_status = Tbdb.quota_status
+      rescue => e
+        Rails.logger.error "Failed to fetch quota from /me: #{e.message}"
+      end
+    end
+
+    render Components::User::ProfileView.new(user: @user, connection: @connection, quota_status: quota_status)
   end
 
   def edit

@@ -2,7 +2,7 @@ class OauthController < ApplicationController
   before_action :require_authentication
 
   def tbdb
-    oauth_service = TbdbOauthService.new(Current.user)
+    oauth_service = TbdbOauthService.new
 
     begin
       authorization_url = oauth_service.authorization_url
@@ -24,7 +24,7 @@ class OauthController < ApplicationController
       if error == "invalid_client" && error_hint == "client_not_found"
         Rails.logger.info "OAuth client not found on TBDB, clearing credentials and re-registering"
 
-        oauth_service = TbdbOauthService.new(Current.user)
+        oauth_service = TbdbOauthService.new
 
         begin
           # Clear the invalid credentials
@@ -50,7 +50,7 @@ class OauthController < ApplicationController
       return
     end
 
-    oauth_service = TbdbOauthService.new(Current.user)
+    oauth_service = TbdbOauthService.new
 
     begin
       oauth_service.exchange_code_for_token(code, state)
@@ -62,7 +62,7 @@ class OauthController < ApplicationController
   end
 
   def tbdb_disconnect
-    oauth_service = TbdbOauthService.new(Current.user)
+    oauth_service = TbdbOauthService.new
     oauth_service.revoke_tokens
     redirect_to profile_path, notice: "Disconnected from TBDB"
   end

@@ -35,29 +35,4 @@ class User < ApplicationRecord
   def effective_thebookdb_api_token
     has_thebookdb_api_token? ? thebookdb_api_token : ENV["TBDB_API_TOKEN"]
   end
-
-  # OAuth management
-  def has_oauth_connection?
-    oauth_client_id.present? && oauth_access_token.present?
-  end
-
-  def oauth_token_expired?
-    oauth_expires_at.nil? || oauth_expires_at <= Time.current
-  end
-
-  def oauth_token_valid?
-    has_oauth_connection? && !oauth_token_expired?
-  end
-
-  def effective_tbdb_token
-    oauth_token_valid? ? oauth_access_token : effective_thebookdb_api_token
-  end
-
-  def clear_oauth_connection
-    update!(
-      oauth_access_token: nil,
-      oauth_refresh_token: nil,
-      oauth_expires_at: nil
-    )
-  end
 end

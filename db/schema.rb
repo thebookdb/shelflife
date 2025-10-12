@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
   create_table "acquisition_sources", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -140,10 +140,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
 
   create_table "scans", force: :cascade do |t|
     t.integer "product_id", null: false
+    t.integer "user_id", null: false
     t.datetime "scanned_at", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "user_id", null: false
     t.index ["product_id"], name: "index_scans_on_product_id"
     t.index ["scanned_at"], name: "index_scans_on_scanned_at"
     t.index ["user_id"], name: "index_scans_on_user_id"
@@ -158,17 +158,26 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_01_054402) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
+  create_table "tbdb_connections", force: :cascade do |t|
+    t.string "client_id"
+    t.string "client_secret"
+    t.string "access_token"
+    t.string "refresh_token"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.string "api_base_url"
+    t.string "status", default: "connected"
+    t.datetime "verified_at"
+    t.text "last_error"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email_address", null: false
     t.string "password_digest", null: false
     t.string "name"
     t.boolean "admin", default: false, null: false
     t.json "user_settings", default: {}
-    t.string "oauth_client_id"
-    t.string "oauth_client_secret"
-    t.string "oauth_access_token"
-    t.string "oauth_refresh_token"
-    t.datetime "oauth_expires_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
