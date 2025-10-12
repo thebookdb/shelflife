@@ -296,12 +296,17 @@ module Tbdb
 
       quota_max = limits["quota_max"]
       current_usage = usage["current_quota"] || 0
+      quota_expires_at = usage["quota_expires_at"]
 
       if quota_max
         remaining = quota_max - current_usage
-        # quota_window is in seconds, end of window is now + window duration
-        reset_time = Time.now.to_i + (limits["quota_window"] || 86400)
-        Rails.logger.debug "Extracted quota from response body: #{remaining}/#{quota_max}"
+        # Use quota_expires_at from API if present, otherwise fallback to quota_window calculation
+        reset_time = if quota_expires_at.present?
+          Time.parse(quota_expires_at).to_i
+        else
+          Time.now.to_i + (limits["quota_window"] || 86400)
+        end
+        Rails.logger.debug "Extracted quota from response body: #{remaining}/#{quota_max}, resets at #{Time.at(reset_time)}"
         store_quota_in_cache(remaining, quota_max, reset_time)
       end
     end

@@ -1,5 +1,6 @@
 class Components::User::ProfileView < Components::Base
   include Phlex::Rails::Helpers::TimeAgoInWords
+  include Phlex::Rails::Helpers::DistanceOfTimeInWords
   # include Rails.application.routes.url_helpers
 
   def initialize(user:, connection:, quota_status: nil)
@@ -133,7 +134,7 @@ class Components::User::ProfileView < Components::Base
                     end
                   elsif @connection.connected?
                     div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
-                      div do
+                      div(class: "flex-1 mr-4") do
                         div(class: "text-sm font-medium text-green-800") { "Connected to TBDB" }
                         div(class: "text-xs text-green-600 mt-1") do
                           if @connection.api_base_url.present?
@@ -157,7 +158,7 @@ class Components::User::ProfileView < Components::Base
                           turbo_method: "delete",
                           turbo_confirm: "Are you sure you want to disconnect from TBDB? This will affect all users."
                         },
-                        class: "text-sm text-red-600 hover:text-red-700 font-medium"
+                        class: "text-sm text-red-600 hover:text-red-700 font-medium whitespace-nowrap"
                       ) { "Disconnect" }
                     end
                   else
@@ -202,7 +203,7 @@ class Components::User::ProfileView < Components::Base
                       # Reset time
                       if @quota_status[:reset_at]
                         div(class: "flex items-center justify-between text-xs text-gray-500") do
-                          span { "Resets at #{@quota_status[:reset_at].strftime('%I:%M %p %Z')}" }
+                          span { "Resets in #{quota_reset_time_text}" }
                           span { "Updated #{time_ago_in_words(@quota_status[:updated_at])} ago" }
                         end
                       end
@@ -234,6 +235,25 @@ class Components::User::ProfileView < Components::Base
   end
 
   private
+
+  def quota_reset_time_text
+    return "" unless @quota_status && @quota_status[:reset_at]
+
+    seconds = (@quota_status[:reset_at] - Time.current).to_i
+    return "soon" if seconds <= 0
+
+    hours = seconds / 3600
+    minutes = (seconds % 3600) / 60
+
+    if hours >= 24
+      days = hours / 24
+      "#{days} #{'day'.pluralize(days)}"
+    elsif hours > 0
+      "#{hours} #{'hour'.pluralize(hours)}"
+    else
+      "#{minutes} #{'minute'.pluralize(minutes)}"
+    end
+  end
 
   def quota_percentage_color
     return "text-gray-600" unless @quota_status
