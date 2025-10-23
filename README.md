@@ -2,6 +2,19 @@
 
 A personal library management application for tracking books, DVDs, board games, and other media through barcode scanning.
 
+## 🐳 Quick Start with Docker
+
+Pre-built Docker images are available at **[ghcr.io/thebookdb/shelflife](https://github.com/thebookdb/shelflife/pkgs/container/shelflife)**
+
+```bash
+docker pull ghcr.io/thebookdb/shelflife:latest
+docker run -d -p 3000:80 -v shelflife_data:/rails/storage \
+  -e RAILS_MASTER_KEY=<your_key> --name shelflife \
+  ghcr.io/thebookdb/shelflife:latest
+```
+
+**📖 For complete Docker documentation, see [DOCKER.md](DOCKER.md)**
+
 ## Docker Deployment
 
 ShelfLife is designed to run as a single Docker container with SQLite and Rails' Solid adapters for caching, queuing, and real-time features.
