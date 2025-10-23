@@ -2,9 +2,24 @@
 
 A personal library management application for tracking books, DVDs, board games, and other media through barcode scanning.
 
+## 🐳 Quick Start with Docker
+
+Pre-built Docker images are available at **[ghcr.io/thebookdb/shelflife](https://github.com/thebookdb/shelflife/pkgs/container/shelflife)**
+
+```bash
+docker pull ghcr.io/thebookdb/shelflife:latest
+docker run -d -p 3000:80 -v shelflife_data:/rails/storage \
+  -e RAILS_MASTER_KEY=<your_key> --name shelflife \
+  ghcr.io/thebookdb/shelflife:latest
+```
+
+**📖 For complete Docker documentation, see [DOCKER.md](DOCKER.md)**
+
 ## Docker Deployment
 
 ShelfLife is designed to run as a single Docker container with SQLite and Rails' Solid adapters for caching, queuing, and real-time features.
+
+> **📦 For detailed information about accessing pre-built Docker images, see [DOCKER.md](DOCKER.md)**
 
 ### Building the Docker Image
 
@@ -52,10 +67,21 @@ The application will be available at http://localhost:3000
 
 ### Pre-built Images
 
-#### GitHub Container Registry (Recommended)
+Pre-built Docker images are automatically published to GitHub Container Registry (GHCR) on every push to the main branch and on tagged releases.
+
+#### GitHub Container Registry
+
+**Available Image Tags:**
+- `latest` - Latest build from the main branch
+- `v*` - Semantic version tags (e.g., `v1.0.0`, `v1.0`, `v1`)
+- `main` - Latest build from main branch
+- `main-<sha>` - Specific commit from main branch
+- `<sha>` - Any specific commit SHA
+
+**Pull and run the latest image:**
 ```bash
 # Pull the latest image
-docker pull ghcr.io/dkam/shelflife:latest
+docker pull ghcr.io/thebookdb/shelflife:latest
 
 # Run the pre-built image
 docker run -d \
@@ -63,21 +89,26 @@ docker run -d \
   -v shelflife_data:/rails/storage \
   -e RAILS_MASTER_KEY=<your_master_key> \
   --name shelflife \
-  ghcr.io/dkam/shelflife:latest
+  ghcr.io/thebookdb/shelflife:latest
 ```
 
-#### Docker Hub
+**Pull a specific version:**
 ```bash
-# Pull the latest image
-docker pull shelflife/shelflife:latest
+# Pull a specific semantic version
+docker pull ghcr.io/thebookdb/shelflife:v1.0.0
 
-# Run the pre-built image
-docker run -d \
-  -p 3000:80 \
-  -v shelflife_data:/rails/storage \
-  -e RAILS_MASTER_KEY=<your_master_key> \
-  --name shelflife \
-  shelflife/shelflife:latest
+# Pull a specific commit
+docker pull ghcr.io/thebookdb/shelflife:main-abc1234
+```
+
+**Viewing Available Images:**
+
+You can view all published images at:
+https://github.com/thebookdb/shelflife/pkgs/container/shelflife
+
+Or use the GitHub CLI:
+```bash
+gh api /orgs/thebookdb/packages/container/shelflife/versions
 ```
 
 ### Environment Variables
