@@ -1,0 +1,20 @@
+services:
+  # Create a .env as per the .env.example file in the repository, or
+  web:
+    image: ghcr.io/dkam/shelf-life:latest  
+    ports:
+      - "3000:80"
+    environment:
+      - RAILS_ENV=production
+      - RAILS_MASTER_KEY=${RAILS_MASTER_KEY}
+      - RAILS_LOG_TO_STDOUT=true
+    volumes:
+      - ./storage:/rails/storage
+      - ./log:/rails/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
