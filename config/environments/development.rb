@@ -27,7 +27,8 @@ Rails.application.configure do
 
   # Change to :null_store to avoid any caching.
   config.cache_store = :solid_cache_store
-  config.solid_cache.connects_to = { database: { writing: :cache } }
+  # Already specified in cache.yml
+  # config.solid_cache.connects_to = { database: { writing: :cache } }
 
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = { database: { writing: :queue } }
