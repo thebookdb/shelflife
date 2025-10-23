@@ -39,5 +39,9 @@
 /node_modules
 *.DS_Store*
 
+# Old JavaScript package manager lock files (we use Bun now)
+package-lock.json
+yarn.lock
+
 # Business planning documents
 ROADMAP.md

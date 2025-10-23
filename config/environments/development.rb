@@ -62,10 +62,11 @@ Rails.application.configure do
 
   # Add request ID to logs for better tracing
   config.log_tags = [:request_id]
+  # Highlight code that triggered redirect in logs.
+  config.action_dispatch.verbose_redirect_logs = true
 
-  # Enhanced logging for job debugging
-  config.log_level = :debug
-  config.active_job.logger = Logger.new(STDOUT)
+  # Suppress logger output for asset requests.
+  config.assets.quiet = true
 
   # Raises error for missing translations.
   # config.i18n.raise_on_missing_translations = true

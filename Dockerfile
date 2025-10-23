@@ -30,15 +30,14 @@ FROM base AS build
 
 # Install packages needed to build gems and node modules
 RUN apt-get update -qq && \
-    apt-get install --no-install-recommends -y build-essential git libyaml-dev node-gyp pkg-config python-is-python3 && \
+    apt-get install --no-install-recommends -y build-essential git libyaml-dev node-gyp pkg-config python-is-python3 unzip && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-# Install JavaScript dependencies
-ARG NODE_VERSION=24.4.1
-ENV PATH=/usr/local/node/bin:$PATH
-RUN curl -sL https://github.com/nodenv/node-build/archive/master.tar.gz | tar xz -C /tmp/ && \
-    /tmp/node-build-master/bin/node-build "${NODE_VERSION}" /usr/local/node && \
-    rm -rf /tmp/node-build-master
+# Install JavaScript dependencies (Bun instead of Node.js)
+ARG BUN_VERSION=1.2.17
+ENV PATH=/root/.bun/bin:$PATH
+RUN curl -fsSL https://bun.sh/install | bash -s "bun-v${BUN_VERSION}" && \
+    rm -rf /root/.bun/cache
 
 # Install application gems
 COPY Gemfile Gemfile.lock ./
@@ -47,8 +46,8 @@ RUN bundle install && \
     bundle exec bootsnap precompile --gemfile
 
 # Install node modules
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY package.json bun.lock ./
+RUN bun install --frozen-lockfile
 
 # Copy application code
 COPY . .

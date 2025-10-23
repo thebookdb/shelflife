@@ -2,8 +2,8 @@
   "name": "app",
   "private": true,
   "scripts": {
-    "build": "esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
-    "build:css": "npx @tailwindcss/cli -i ./app/assets/stylesheets/application.css -o ./app/assets/builds/application.css --minify"
+    "build": "bun run esbuild app/javascript/*.* --bundle --sourcemap --format=esm --outdir=app/assets/builds --public-path=/assets",
+    "build:css": "bunx @tailwindcss/cli -i ./app/assets/stylesheets/application.css -o ./app/assets/builds/application.css --minify"
   },
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
