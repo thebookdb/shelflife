@@ -10,6 +10,8 @@ module ShelfLife
   class Application < Rails::Application
     config.action_cable.mount_path = "/cable"
 
+    config.active_storage.variant_processor = :disabled
+
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 8.0
 
