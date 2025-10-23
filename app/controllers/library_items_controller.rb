@@ -1,15 +1,37 @@
 class LibraryItemsController < ApplicationController
+  before_action :set_library_item, only: [:show, :edit, :update, :destroy]
+
+  def show
+    render Components::LibraryItems::ShowView.new(library_item: @library_item)
+  end
+
+  def edit
+    render Components::LibraryItems::EditView.new(library_item: @library_item)
+  end
+
+  def update
+    # Convert tags string to array if present
+    if params[:library_item][:tags].present?
+      params[:library_item][:tags] = params[:library_item][:tags].split(',').map(&:strip).reject(&:blank?)
+    end
+
+    if @library_item.update(library_item_params)
+      redirect_to library_path(@library_item.library), notice: "Item updated successfully."
+    else
+      render Components::LibraryItems::EditView.new(library_item: @library_item), status: :unprocessable_entity
+    end
+  end
+
   def create
     handle_exist_checkbox
   end
 
   def destroy
-    @library_item = LibraryItem.find(params[:id])
     @product = @library_item.product
     @library = @library_item.library
-    
+
     @library_item.destroy
-    
+
     respond_to do |format|
       format.turbo_stream
       format.html { redirect_back_or_to libraries_path, notice: "Removed from library." }
@@ -17,6 +39,33 @@ class LibraryItemsController < ApplicationController
   end
 
   private
+
+  def set_library_item
+    @library_item = LibraryItem.find(params[:id])
+  end
+
+  def library_item_params
+    params.require(:library_item).permit(
+      :location,
+      :condition_id,
+      :condition_notes,
+      :notes,
+      :private_notes,
+      :acquisition_date,
+      :acquisition_price,
+      :acquisition_source_id,
+      :ownership_status_id,
+      :item_status_id,
+      :copy_identifier,
+      :replacement_cost,
+      :original_retail_price,
+      :current_market_value,
+      :lent_to,
+      :due_date,
+      :is_favorite,
+      tags: []
+    )
+  end
 
   def handle_exist_checkbox
     @product = Product.find(params[:library_item][:product_id])

@@ -137,7 +137,11 @@ User-specific tracking of barcode scans:
 - **Primary Keys**: Standard Rails integer auto-increment primary keys (no ULIDs)
 - **Book Identification**: Books identified by EAN-13 barcodes (13-digit strings)
 - **Image Handling**: Products have `cover_image` (Active Storage) and `cover_image_url` fields
-- **TBDB Integration**: Single shared `TbdbConnection` singleton for OAuth (not per-user)
+- **TBDB Integration**:
+  - Single shared `TbdbConnection` singleton for OAuth (not per-user)
+  - `Tbdb::Client` - API client for making authenticated requests (lazy validation)
+  - `Tbdb::OauthService` - OAuth lifecycle management (register, exchange, refresh, revoke)
+  - Client initialization is cheap (just DB query), validation happens on first request
 - Pagination handled by Pagy gem
 - the MCP gitea is available for the repository dkam/shelf-life for git actions
 

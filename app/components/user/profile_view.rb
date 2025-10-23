@@ -122,9 +122,6 @@ class Components::User::ProfileView < Components::Base
                           if @connection.last_error.present?
                             div(class: "text-xs text-red-600 mt-1") { @connection.last_error }
                           end
-                          if @connection.api_base_url.present?
-                            div(class: "text-xs text-red-500 mt-1") { "OAuth tokens from: #{@connection.api_base_url}" }
-                          end
                         end
                         a(
                           href: auth_tbdb_path,

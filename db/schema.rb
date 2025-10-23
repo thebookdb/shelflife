@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
+ActiveRecord::Schema[8.0].define(version: 2025_10_18_035415) do
   create_table "acquisition_sources", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -49,6 +49,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "conditions", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.integer "sort_order", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["name"], name: "index_conditions_on_name", unique: true
+  end
+
   create_table "item_statuses", force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
@@ -73,7 +82,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
   create_table "library_items", force: :cascade do |t|
     t.integer "product_id", null: false
     t.integer "library_id", null: false
-    t.string "condition"
     t.string "location"
     t.text "notes"
     t.datetime "date_added", default: -> { "CURRENT_TIMESTAMP" }
@@ -97,7 +105,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
     t.boolean "is_favorite", default: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "condition_id"
     t.index ["acquisition_source_id"], name: "index_library_items_on_acquisition_source_id"
+    t.index ["condition_id"], name: "index_library_items_on_condition_id"
     t.index ["item_status_id"], name: "index_library_items_on_item_status_id"
     t.index ["library_id"], name: "index_library_items_on_library_id"
     t.index ["ownership_status_id"], name: "index_library_items_on_ownership_status_id"
@@ -170,6 +180,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
     t.string "status", default: "connected"
     t.datetime "verified_at"
     t.text "last_error"
+    t.integer "quota_remaining"
+    t.integer "quota_limit"
+    t.decimal "quota_percentage"
+    t.datetime "quota_reset_at"
+    t.datetime "quota_updated_at"
   end
 
   create_table "users", force: :cascade do |t|
@@ -186,6 +201,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_11_014729) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "library_items", "acquisition_sources"
+  add_foreign_key "library_items", "conditions"
   add_foreign_key "library_items", "item_statuses"
   add_foreign_key "library_items", "libraries"
   add_foreign_key "library_items", "ownership_statuses"

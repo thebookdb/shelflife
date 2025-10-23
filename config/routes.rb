@@ -29,7 +29,11 @@ Rails.application.routes.draw do
   delete "/signout", to: "sessions#destroy", as: :signout
 
   # Product management routes
-  resources :products, only: [ :index, :show, :destroy ]
+  resources :products, only: [ :index, :show, :destroy ] do
+    member do
+      post :refresh
+    end
+  end
 
   # Library management routes
   resources :libraries, only: [ :index, :show, :edit, :update ] do
@@ -39,7 +43,7 @@ Rails.application.routes.draw do
       get :export
     end
   end
-  resources :library_items, only: [ :create, :destroy ]
+  resources :library_items, only: [ :show, :edit, :update, :create, :destroy ]
 
   # Scanner routes
   get "/scanner", to: "scanners#index", as: :scanner

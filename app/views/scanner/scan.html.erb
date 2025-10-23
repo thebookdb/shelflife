@@ -1,8 +1,8 @@
 <% content_for :tags do %>
-  <meta name="description" content="Advanced barcode scanner for book prices - find the cheapest books with Booko's improved scanner" >
+  <meta name="description" content="Advanced barcode scanner for books, DVDs, and board games - scan and manage your library" >
   <meta name="keywords" content="barcode scanner, book prices, ISBN scanner, quagga2, advanced scanner"/>
-  <meta property="og:description" content="Advanced Booko Barcode Scanner" >
-  <meta property="og:site_name" content="Booko" >
+  <meta property="og:description" content="ShelfLife Barcode Scanner" >
+  <meta property="og:site_name" content="ShelfLife" >
   <!-- script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script-->
 <% end %>
 
@@ -14,16 +14,16 @@
       
       <!-- Scanner Controls -->
       <div class="text-center mb-6">
-        <button data-quagga2-scanner-target="startButton" data-action="click->quagga2-scanner#toggleCamera" 
-                class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-booko hover:bg-booko-darker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko mr-4">
+        <button data-quagga2-scanner-target="startButton" data-action="click->quagga2-scanner#toggleCamera"
+                class="inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-4">
           <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 24 24">
             <path d="M23 4.5V8h-1V4.5A1.502 1.502 0 0 0 20.5 3H17V2h3.5A2.503 2.503 0 0 1 23 4.5zM4.5 22A1.502 1.502 0 0 1 3 20.5V17H2v3.5A2.503 2.503 0 0 0 4.5 23H8v-1zM22 20.5a1.502 1.502 0 0 1-1.5 1.5H17v1h3.5a2.503 2.503 0 0 0 2.5-2.5V17h-1zM3 4.5A1.502 1.502 0 0 1 4.5 3H8V2H4.5A2.503 2.503 0 0 0 2 4.5V8h1zM10 19V6H9v13zM6 6v13h2V6zm8 13V6h-2v13zm3-13v13h2V6zm-2 0v13h1V6z"/>
           </svg>
           <span data-quagga2-scanner-target="buttonText">Start Scan</span>
         </button>
         
-        <button data-quagga2-scanner-target="flashButton" data-action="click->quagga2-scanner#toggleFlash" 
-                class="inline-flex items-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-tertiary-600 hover:bg-gray-50 dark:hover:bg-tertiary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko" 
+        <button data-quagga2-scanner-target="flashButton" data-action="click->quagga2-scanner#toggleFlash"
+                class="inline-flex items-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-tertiary-600 hover:bg-gray-50 dark:hover:bg-tertiary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 style="display: none;">
           <span data-quagga2-scanner-target="flashText">💡 Torch Off</span>
         </button>
@@ -76,7 +76,7 @@
                placeholder="Enter ISBN or barcode (e.g., 9781234567890)" 
                class="flex-1 min-w-0 block w-full px-3 py-2 rounded-md border border-gray-300 dark:border-tertiary-500 bg-white dark:bg-tertiary-600 text-gray-900 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
         <button data-action="click->quagga2-scanner#searchManual"
-                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-booko hover:bg-booko-darker focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-booko">
+                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
           Search
         </button>
       </div>
@@ -106,8 +106,7 @@
     <!-- Navigation Links -->
     <div class="text-center space-y-4">
       <p class="text-xs text-gray-500 dark:text-gray-400">
-        Having issues? <a href="/faq" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">Check our FAQ</a> or 
-        <a href="mailto:support@booko.com.au" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">contact support</a>
+        Having issues? <a href="/faq" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">Check our FAQ</a>
       </p>
     </div>
 

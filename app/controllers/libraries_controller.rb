@@ -14,8 +14,19 @@ class LibrariesController < ApplicationController
       library_items = library_items.joins(:product).where(products: { valid_barcode: true })
     end
 
-    @pagy, @library_items = pagy(library_items, overflow: :last_page)
-    render Components::Libraries::ShowView.new(library: @library, library_items: @library_items, pagy: @pagy)
+    # Group library items by product for display
+    @grouped_items = library_items.group_by(&:product)
+
+    # Paginate by unique products, not individual items
+    products_array = @grouped_items.keys
+    @pagy, @products = pagy_array(products_array, overflow: :last_page)
+
+    render Components::Libraries::ShowView.new(
+      library: @library,
+      products: @products,
+      grouped_items: @grouped_items,
+      pagy: @pagy
+    )
   end
 
   def edit

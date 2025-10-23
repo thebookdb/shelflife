@@ -1,7 +1,8 @@
 class TbdbConnection < ApplicationRecord
   # Singleton pattern - only one TBDB connection per ShelfLife instance
   # This connection is used for all TBDB API product data lookups
-
+  # See app/services/tbdb for tbdb client, oauth service and error definitions.
+  
   VERIFICATION_TTL = 10.minutes
 
   def self.instance
@@ -42,7 +43,12 @@ class TbdbConnection < ApplicationRecord
   def mark_invalid!(error_message)
     update!(
       status: 'invalid',
-      last_error: error_message
+      last_error: error_message,
+      quota_remaining: nil,
+      quota_limit: nil,
+      quota_percentage: nil,
+      quota_reset_at: nil,
+      quota_updated_at: nil
     )
   end
 
@@ -69,7 +75,53 @@ class TbdbConnection < ApplicationRecord
       api_base_url: nil,
       status: 'connected',
       verified_at: nil,
-      last_error: nil
+      last_error: nil,
+      quota_remaining: nil,
+      quota_limit: nil,
+      quota_percentage: nil,
+      quota_reset_at: nil,
+      quota_updated_at: nil
     )
+  end
+
+  # Update quota information from API response
+  def update_quota(remaining:, limit:, reset_at: nil)
+    percentage = if limit && limit > 0
+      (remaining.to_f / limit * 100).round(1)
+    else
+      0.0
+    end
+
+    update!(
+      quota_remaining: remaining,
+      quota_limit: limit,
+      quota_percentage: percentage,
+      quota_reset_at: reset_at,
+      quota_updated_at: Time.current
+    )
+  end
+
+  # Clear quota information (when connection becomes invalid)
+  def clear_quota
+    update!(
+      quota_remaining: nil,
+      quota_limit: nil,
+      quota_percentage: nil,
+      quota_reset_at: nil,
+      quota_updated_at: nil
+    )
+  end
+
+  # Get quota status as a hash (for compatibility with cached format)
+  def quota_status
+    return nil unless quota_remaining && quota_limit
+
+    {
+      remaining: quota_remaining,
+      limit: quota_limit,
+      percentage: quota_percentage,
+      reset_at: quota_reset_at,
+      updated_at: quota_updated_at
+    }
   end
 end

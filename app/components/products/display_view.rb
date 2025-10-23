@@ -56,8 +56,18 @@ class Components::Products::DisplayView < Components::Base
             # Library Selection Dropdown
             render Components::Shared::LibraryDropdownView.new(product: @product)
 
-            # Delete Product Button
-            div(class: "mt-4 pt-4 border-t border-gray-300") do
+            # Refresh and Delete Product Buttons
+            div(class: "mt-4 pt-4 border-t border-gray-300 flex gap-2") do
+              # Refresh Data Button
+              form(method: "post", action: refresh_product_path(@product), class: "inline") do
+                input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
+                button(
+                  type: "submit",
+                  class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                ) { "Refresh Data" }
+              end
+
+              # Delete Product Button
               form(method: "post", action: product_path(@product), class: "inline") do
                 input(type: "hidden", name: "_method", value: "delete")
                 input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)

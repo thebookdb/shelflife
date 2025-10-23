@@ -1,6 +1,6 @@
 class ProductEnrichmentService
-  def initialize(tbdb_service: nil)
-    @tbdb_service = tbdb_service || ShelfLife::TbdbService.new
+  def initialize(tbdb_client: nil)
+    @tbdb_client = tbdb_client || Tbdb::Client.new
   end
 
   def call(product, force = false)
@@ -62,7 +62,7 @@ class ProductEnrichmentService
   end
 
   def fetch_tbdb_data(gtin)
-    tbdb_response = @tbdb_service.get_product(gtin)
+    tbdb_response = @tbdb_client.get_product(gtin)
     return nil unless tbdb_response.present?
 
     # Extract data from response structure

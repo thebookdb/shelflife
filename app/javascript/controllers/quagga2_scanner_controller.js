@@ -64,7 +64,7 @@ export default class extends Controller {
       
       // Update UI
       this.buttonTextTarget.textContent = "Stop";
-      this.startButtonTarget.classList.remove("bg-booko", "hover:bg-booko-darker");
+      this.startButtonTarget.classList.remove("bg-indigo-600", "hover:bg-indigo-700");
       this.startButtonTarget.classList.add("bg-red-600", "hover:bg-red-700");
       
       // Show scanner
@@ -148,7 +148,7 @@ export default class extends Controller {
     // Reset UI
     this.buttonTextTarget.textContent = "Scan";
     this.startButtonTarget.classList.remove("bg-red-600", "hover:bg-red-700");
-    this.startButtonTarget.classList.add("bg-booko", "hover:bg-booko-darker");
+    this.startButtonTarget.classList.add("bg-indigo-600", "hover:bg-indigo-700");
     
     // Hide scanner
     this.scannerContainerTarget.style.display = "none";

@@ -79,6 +79,13 @@ class ProductsController < ApplicationController
     )
   end
 
+  def refresh
+    @product = Product.find(params[:id])
+    ProductDataFetchJob.set(queue: :high_priority).perform_later(@product, true)
+
+    redirect_to "/#{@product.gtin}", notice: "Refreshing data for #{@product.safe_title}..."
+  end
+
   def destroy
     @product = Product.find(params[:id])
     product_title = @product.safe_title

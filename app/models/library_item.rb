@@ -1,9 +1,12 @@
 class LibraryItem < ApplicationRecord
   belongs_to :product, foreign_key: :product_id
   belongs_to :library, foreign_key: :library_id
+  belongs_to :condition, optional: true
   belongs_to :item_status, optional: true
   belongs_to :acquisition_source, optional: true
   belongs_to :ownership_status, optional: true
+
+  serialize :tags, type: Array, coder: JSON
 
   validates :product_id, presence: true
   validates :library_id, presence: true
@@ -19,6 +22,7 @@ class LibraryItem < ApplicationRecord
   scope :owned_items, -> { joins(:library).where(libraries: { virtual: false }) }
   scope :favorites, -> { where(is_favorite: true) }
   scope :by_condition, ->(condition) { where(condition: condition) }
+  scope :with_condition, ->(condition_name) { joins(:condition).where(conditions: { name: condition_name }) }
   scope :overdue, -> { where("due_date < ?", Date.current) }
   scope :with_status, ->(status_name) { joins(:item_status).where(item_statuses: { name: status_name }) }
   scope :available, -> { joins(:item_status).where(item_statuses: { name: "Available" }) }
@@ -81,9 +85,12 @@ class LibraryItem < ApplicationRecord
 
   def update_condition(new_condition, notes = nil)
     return false if virtual_item?
-    
+
+    condition_record = new_condition.is_a?(Condition) ? new_condition : Condition.find_by(name: new_condition)
+    return false unless condition_record
+
     update(
-      condition: new_condition,
+      condition: condition_record,
       condition_notes: notes,
       last_condition_check: Date.current
     )
@@ -99,16 +106,7 @@ class LibraryItem < ApplicationRecord
   end
 
   def condition_status
-    return "Unknown" if condition.blank?
-    condition.humanize
-  end
-
-  def tag_list
-    tags&.split(",")&.map(&:strip) || []
-  end
-
-  def tag_list=(tag_array)
-    self.tags = Array(tag_array).map(&:strip).reject(&:blank?).join(", ")
+    condition&.name || "Unknown"
   end
 
   private
