@@ -10,36 +10,36 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_10_18_035415) do
+ActiveRecord::Schema[8.1].define(version: 2025_10_23_012408) do
   create_table "acquisition_sources", force: :cascade do |t|
-    t.string "name", null: false
-    t.text "description"
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_acquisition_sources_on_active"
     t.index ["name"], name: "index_acquisition_sources_on_name", unique: true
   end
 
   create_table "active_storage_attachments", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "record_type", null: false
-    t.bigint "record_id", null: false
     t.bigint "blob_id", null: false
     t.datetime "created_at", null: false
+    t.string "name", null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
     t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
     t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
   end
 
   create_table "active_storage_blobs", force: :cascade do |t|
-    t.string "key", null: false
-    t.string "filename", null: false
-    t.string "content_type"
-    t.text "metadata"
-    t.string "service_name", null: false
     t.bigint "byte_size", null: false
     t.string "checksum"
+    t.string "content_type"
     t.datetime "created_at", null: false
+    t.string "filename", null: false
+    t.string "key", null: false
+    t.text "metadata"
+    t.string "service_name", null: false
     t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
   end
 
@@ -50,62 +50,62 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_035415) do
   end
 
   create_table "conditions", force: :cascade do |t|
-    t.string "name", null: false
-    t.text "description"
-    t.integer "sort_order", default: 0
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.integer "sort_order", default: 0
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_conditions_on_name", unique: true
   end
 
   create_table "item_statuses", force: :cascade do |t|
-    t.string "name", null: false
-    t.text "description"
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_item_statuses_on_active"
     t.index ["name"], name: "index_item_statuses_on_name", unique: true
   end
 
   create_table "libraries", force: :cascade do |t|
-    t.string "name", null: false
+    t.datetime "created_at", null: false
     t.text "description"
+    t.string "name", null: false
+    t.datetime "updated_at", null: false
     t.boolean "virtual", default: false, null: false
     t.integer "visibility", default: 0, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
     t.index ["name"], name: "index_libraries_on_name", unique: true
     t.index ["virtual"], name: "index_libraries_on_virtual"
   end
 
   create_table "library_items", force: :cascade do |t|
-    t.integer "product_id", null: false
+    t.date "acquisition_date"
+    t.decimal "acquisition_price", precision: 8, scale: 2
+    t.integer "acquisition_source_id"
+    t.integer "condition_id"
+    t.text "condition_notes"
+    t.string "copy_identifier"
+    t.datetime "created_at", null: false
+    t.decimal "current_market_value", precision: 8, scale: 2
+    t.text "damage_description"
+    t.datetime "date_added", default: -> { "CURRENT_TIMESTAMP" }
+    t.date "due_date"
+    t.boolean "is_favorite", default: false
+    t.integer "item_status_id"
+    t.datetime "last_accessed"
+    t.date "last_condition_check"
+    t.string "lent_to"
     t.integer "library_id", null: false
     t.string "location"
     t.text "notes"
-    t.datetime "date_added", default: -> { "CURRENT_TIMESTAMP" }
-    t.date "acquisition_date"
-    t.integer "acquisition_source_id"
-    t.decimal "acquisition_price", precision: 8, scale: 2
-    t.integer "ownership_status_id"
-    t.string "copy_identifier"
-    t.text "condition_notes"
-    t.date "last_condition_check"
-    t.text "damage_description"
-    t.integer "item_status_id"
-    t.string "lent_to"
-    t.date "due_date"
-    t.decimal "replacement_cost", precision: 8, scale: 2
     t.decimal "original_retail_price", precision: 8, scale: 2
-    t.decimal "current_market_value", precision: 8, scale: 2
+    t.integer "ownership_status_id"
     t.text "private_notes"
+    t.integer "product_id", null: false
+    t.decimal "replacement_cost", precision: 8, scale: 2
     t.string "tags"
-    t.datetime "last_accessed"
-    t.boolean "is_favorite", default: false
-    t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "condition_id"
     t.index ["acquisition_source_id"], name: "index_library_items_on_acquisition_source_id"
     t.index ["condition_id"], name: "index_library_items_on_condition_id"
     t.index ["item_status_id"], name: "index_library_items_on_item_status_id"
@@ -116,85 +116,85 @@ ActiveRecord::Schema[8.0].define(version: 2025_10_18_035415) do
   end
 
   create_table "ownership_statuses", force: :cascade do |t|
-    t.string "name", null: false
-    t.text "description"
     t.boolean "active", default: true
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_ownership_statuses_on_active"
     t.index ["name"], name: "index_ownership_statuses_on_name", unique: true
   end
 
   create_table "products", force: :cascade do |t|
-    t.string "gtin", null: false
-    t.boolean "valid_barcode", default: true
-    t.string "title"
-    t.string "subtitle"
-    t.string "author"
-    t.string "publisher"
-    t.date "publication_date"
-    t.text "description"
-    t.string "cover_image_url"
-    t.integer "pages"
-    t.string "genre"
-    t.integer "product_type", default: 1, null: false
-    t.json "tbdb_data"
-    t.text "notes"
-    t.string "players"
     t.string "age_range"
+    t.string "author"
+    t.string "cover_image_url"
     t.datetime "created_at", null: false
+    t.text "description"
+    t.string "genre"
+    t.string "gtin", null: false
+    t.text "notes"
+    t.integer "pages"
+    t.string "players"
+    t.integer "product_type", default: 1, null: false
+    t.date "publication_date"
+    t.string "publisher"
+    t.string "subtitle"
+    t.json "tbdb_data"
+    t.string "title"
     t.datetime "updated_at", null: false
+    t.boolean "valid_barcode", default: true
     t.index ["gtin"], name: "index_products_on_gtin", unique: true
     t.index ["product_type"], name: "index_products_on_product_type"
   end
 
   create_table "scans", force: :cascade do |t|
-    t.integer "product_id", null: false
-    t.integer "user_id", null: false
-    t.datetime "scanned_at", null: false
     t.datetime "created_at", null: false
+    t.integer "product_id", null: false
+    t.datetime "scanned_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "user_id", null: false
     t.index ["product_id"], name: "index_scans_on_product_id"
     t.index ["scanned_at"], name: "index_scans_on_scanned_at"
     t.index ["user_id"], name: "index_scans_on_user_id"
   end
 
   create_table "sessions", force: :cascade do |t|
-    t.integer "user_id", null: false
-    t.string "ip_address"
-    t.string "user_agent"
     t.datetime "created_at", null: false
+    t.string "ip_address"
     t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.integer "user_id", null: false
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "tbdb_connections", force: :cascade do |t|
+    t.string "access_token"
+    t.string "api_base_url"
     t.string "client_id"
     t.string "client_secret"
-    t.string "access_token"
-    t.string "refresh_token"
-    t.datetime "expires_at"
     t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "api_base_url"
-    t.string "status", default: "connected"
-    t.datetime "verified_at"
+    t.datetime "expires_at"
     t.text "last_error"
-    t.integer "quota_remaining"
     t.integer "quota_limit"
     t.decimal "quota_percentage"
+    t.integer "quota_remaining"
     t.datetime "quota_reset_at"
     t.datetime "quota_updated_at"
+    t.string "refresh_token"
+    t.string "status", default: "connected"
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at"
   end
 
   create_table "users", force: :cascade do |t|
-    t.string "email_address", null: false
-    t.string "password_digest", null: false
-    t.string "name"
     t.boolean "admin", default: false, null: false
-    t.json "user_settings", default: {}
     t.datetime "created_at", null: false
+    t.string "email_address", null: false
+    t.string "name"
+    t.string "password_digest", null: false
     t.datetime "updated_at", null: false
+    t.json "user_settings", default: {}
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 

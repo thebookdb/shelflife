@@ -6,6 +6,8 @@ A personal library management application for tracking books, DVDs, board games,
 
 ShelfLife is designed to run as a single Docker container with SQLite and Rails' Solid adapters for caching, queuing, and real-time features.
 
+Barcode scanning is the ideal method of getting data into Shelflife, and using a Camera on a web app requires HTTPS.   Alternatively, you can edit your library and manually import products, by entering their barcode / ISBNs. 
+
 ### Building the Docker Image
 
 #### Simple Build
