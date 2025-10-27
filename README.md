@@ -6,7 +6,17 @@ A personal library management application for tracking books, DVDs, board games,
 
 ShelfLife is designed to run as a single Docker container with SQLite and Rails' Solid adapters for caching, queuing, and real-time features.
 
-Barcode scanning is the ideal method of getting data into Shelflife, and using a Camera on a web app requires HTTPS.   Alternatively, you can edit your library and manually import products, by entering their barcode / ISBNs. 
+Barcode scanning is the ideal method of getting data into Shelflife, and using a Camera on a web app requires HTTPS.   Alternatively, you can edit your library and manually import products, by entering their barcode / ISBNs.
+
+## Caddy configuation
+
+You can use Caddy to forward traffic to Shellife
+
+```
+shelflife.example.com {
+	reverse_proxy 192.168.1.2:3000
+}
+```
 
 ### Building the Docker Image
 
