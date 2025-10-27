@@ -66,20 +66,34 @@ docker run -d \
   ghcr.io/dkam/shelflife:latest
 ```
 
-#### Docker Hub
-```bash
-# Pull the latest image
-docker pull shelflife/shelflife:latest
+#### Docker Compose
+Create a `.env` file with `SECRET_KEY_BASE=...` value in it.  
 
-# Run the pre-built image
-docker run -d \
-  -p 3000:80 \
-  -v shelflife_data:/rails/storage \
-  -e RAILS_MASTER_KEY=<your_master_key> \
-  --name shelflife \
-  shelflife/shelflife:latest
+To generate the SECRET_KEY_BASE value, use `openssl rand -hex 64`
+
+Then create the storage and log directories.
+
 ```
-
+services:
+  web:
+    image: ghcr.io/thebookdb/shelf-life:latest  # Using GitHub Container Registry
+    ports:
+      - "3000:80"
+    environment:
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - RAILS_LOG_TO_STDOUT=true
+    volumes:
+      - ./storage:/rails/storage
+      - ./log:/rails/log
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/up"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+```
 ### Environment Variables
 
 - `RAILS_MASTER_KEY`: Required for decrypting credentials
