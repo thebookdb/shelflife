@@ -79,3 +79,7 @@ gem "sqids", "~> 0.2.2"
 gem "down", "~> 5.4"
 
 gem "csv", "~> 3.3"
+
+# Error tracking and performance monitoring
+gem "sentry-ruby"
+gem "sentry-rails"

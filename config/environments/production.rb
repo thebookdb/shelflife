@@ -60,7 +60,13 @@ Rails.application.configure do
   # config.action_mailer.raise_delivery_errors = false
 
   # Set host to be used by links generated in mailer templates.
-  config.action_mailer.default_url_options = { host: "example.com" }
+  config.action_mailer.default_url_options = { host: ENV.fetch("APPLICATION_HOST", "example.com") }
+
+  # Set host to be used by routes URL helpers.
+  config.routes.default_url_options[:host] = ENV.fetch("APPLICATION_HOST", "example.com")
+
+  # Enable Sentry error reporting
+  config.sentry.enabled = true if ENV["SENTRY_DSN"]
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
