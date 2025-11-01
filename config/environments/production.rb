@@ -63,7 +63,7 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: ENV.fetch("APPLICATION_HOST", "example.com") }
 
   # Set host to be used by routes URL helpers.
-  config.routes.default_url_options[:host] = ENV.fetch("APPLICATION_HOST", "example.com")
+  config.application.default_url_options[:host] = ENV.fetch("APPLICATION_HOST", "example.com")
 
   # Enable Sentry error reporting
   config.sentry.enabled = true if ENV["SENTRY_DSN"]
