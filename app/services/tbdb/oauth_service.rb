@@ -11,7 +11,7 @@ module Tbdb
   TBDB_OAUTH_URL = ENV.fetch("TBDB_OAUTH_URL", "https://thebookdb.info").freeze
 
   # API endpoints (for making authenticated API calls)
-  TBDB_API_URL = ENV.fetch("TBDB_API_URI", "https://api.thebookdb.info").freeze
+  TBDB_API_URL = ENV.fetch("TBDB_BASE_URL", "https://api.thebookdb.info").freeze
 
   def initialize
     @connection = TbdbConnection.instance

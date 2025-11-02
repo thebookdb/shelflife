@@ -9,20 +9,42 @@ class TbdbConnection < ApplicationRecord
     first_or_create!
   end
 
+  # Check if API token authentication is being used
+  def api_token_authenticated?
+    ENV["TBDB_API_TOKEN"].present?
+  end
+
+  # Get current authentication method
+  def authentication_method
+    api_token_authenticated? ? :api_token : :oauth
+  end
+
   # Check if OAuth app is registered with TBDB
   def registered?
     client_id.present? && client_secret.present?
   end
 
-  # Check if we have valid access tokens and connection is not marked invalid
+  # Check if we have a valid connection (OAuth or API token)
   def connected?
-    access_token.present? && status == 'connected'
+    if api_token_authenticated?
+      # API token mode - connection is always "connected" if token is present
+      true
+    else
+      # OAuth mode - check tokens and status
+      access_token.present? && status == 'connected'
+    end
   end
 
-  # Check if the OAuth token has expired
+  # Check if the authentication token has expired
   def token_expired?
-    return true if expires_at.nil?
-    Time.current >= expires_at
+    if api_token_authenticated?
+      # API tokens don't expire like OAuth tokens
+      false
+    else
+      # OAuth token expiration check
+      return true if expires_at.nil?
+      Time.current >= expires_at
+    end
   end
 
   # Check if connection was verified recently

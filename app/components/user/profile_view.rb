@@ -108,66 +108,82 @@ class Components::User::ProfileView < Components::Base
               h3(class: "text-lg font-medium text-gray-900 mb-6") { "TBDB Integration" }
 
               div(class: "space-y-6") do
-                # OAuth Connection Status
+                # TBDB Connection Status
                 div do
                   dt(class: "text-sm font-medium text-gray-700 mb-2") { "System Connection" }
-                  dd(class: "text-xs text-gray-500 mb-3") { "Shared OAuth connection to TheBookDB.info for product data lookups." }
 
-                  if @connection.status == 'invalid'
-                    # Show invalid connection state with error message
-                    div(class: "space-y-3") do
-                      div(class: "flex items-start justify-between p-3 bg-red-50 border border-red-200 rounded") do
-                        div(class: "flex-1") do
-                          div(class: "text-sm font-medium text-red-800") { "Connection Invalid" }
-                          if @connection.last_error.present?
-                            div(class: "text-xs text-red-600 mt-1") { @connection.last_error }
+                  if api_token_configured?
+                    # API token is configured - show success status
+                    dd(class: "text-xs text-gray-500 mb-3") { "Using API token for product data lookups." }
+                    div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
+                      div(class: "flex-1") do
+                        div(class: "text-sm font-medium text-green-800") { "API Token Configured" }
+                        div(class: "text-xs text-green-600 mt-1") { "Product data access via environment variable" }
+                      end
+                      div(class: "flex items-center text-green-600") do
+                        render Components::Shared::IconView.new(name: :check, class: "text-green-600")
+                      end
+                    end
+                  else                    
+                    # No API token - show OAuth connection status
+                    dd(class: "text-xs text-gray-500 mb-3") { "Shared OAuth connection to TheBookDB.info for product data lookups." }
+
+                    if @connection.status == 'invalid'
+                      # Show invalid connection state with error message
+                      div(class: "space-y-3") do
+                        div(class: "flex items-start justify-between p-3 bg-red-50 border border-red-200 rounded") do
+                          div(class: "flex-1") do
+                            div(class: "text-sm font-medium text-red-800") { "Connection Invalid" }
+                            if @connection.last_error.present?
+                              div(class: "text-xs text-red-600 mt-1") { @connection.last_error }
+                            end
+                          end
+                          a(
+                            href: auth_tbdb_path,
+                            class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
+                          ) { "Reconnect" }
+                        end
+                      end
+                    elsif @connection.connected?
+                      div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
+                        div(class: "flex-1 mr-4") do
+                          div(class: "text-sm font-medium text-green-800") { "Connected to TBDB" }
+                          div(class: "text-xs text-green-600 mt-1") do
+                            if @connection.api_base_url.present?
+                              plain "#{@connection.api_base_url} • "
+                            end
+                            if @connection.token_expired?
+                              plain "Auto-refreshing token as needed"
+                            else
+                              plain "Active • Expires #{@connection.expires_at.strftime('%b %d at %I:%M %p')}"
+                            end
+                          end
+                          if @connection.verified_at.present?
+                            div(class: "text-xs text-green-500 mt-1") do
+                              plain "Last verified #{time_ago_in_words(@connection.verified_at)} ago"
+                            end
                           end
                         end
                         a(
+                          href: auth_tbdb_disconnect_path,
+                          data: {
+                            turbo_method: "delete",
+                            turbo_confirm: "Are you sure you want to disconnect from TBDB? This will affect all users."
+                          },
+                          class: "text-sm text-red-600 hover:text-red-700 font-medium whitespace-nowrap"
+                        ) { "Disconnect" }
+                      end
+                    else
+                      div(class: "flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded") do
+                        div do
+                          div(class: "text-sm font-medium text-gray-700") { "Not Connected" }
+                          div(class: "text-xs text-gray-500 mt-1") { "Connect for product data access" }
+                        end
+                        a(
                           href: auth_tbdb_path,
-                          class: "inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700"
-                        ) { "Reconnect" }
+                          class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+                        ) { "Connect to TBDB" }
                       end
-                    end
-                  elsif @connection.connected?
-                    div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
-                      div(class: "flex-1 mr-4") do
-                        div(class: "text-sm font-medium text-green-800") { "Connected to TBDB" }
-                        div(class: "text-xs text-green-600 mt-1") do
-                          if @connection.api_base_url.present?
-                            plain "#{@connection.api_base_url} • "
-                          end
-                          if @connection.token_expired?
-                            plain "Auto-refreshing token as needed"
-                          else
-                            plain "Active • Expires #{@connection.expires_at.strftime('%b %d at %I:%M %p')}"
-                          end
-                        end
-                        if @connection.verified_at.present?
-                          div(class: "text-xs text-green-500 mt-1") do
-                            plain "Last verified #{time_ago_in_words(@connection.verified_at)} ago"
-                          end
-                        end
-                      end
-                      a(
-                        href: auth_tbdb_disconnect_path,
-                        data: {
-                          turbo_method: "delete",
-                          turbo_confirm: "Are you sure you want to disconnect from TBDB? This will affect all users."
-                        },
-                        class: "text-sm text-red-600 hover:text-red-700 font-medium whitespace-nowrap"
-                      ) { "Disconnect" }
-                    end
-                  else
-                    div(class: "flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded") do
-                      div do
-                        div(class: "text-sm font-medium text-gray-700") { "Not Connected" }
-                        div(class: "text-xs text-gray-500 mt-1") { "Connect for product data access" }
-                      end
-                      a(
-                        href: auth_tbdb_path,
-                        class: "inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
-                      ) { "Connect to TBDB" }
                     end
                   end
                 end
@@ -232,6 +248,10 @@ class Components::User::ProfileView < Components::Base
   end
 
   private
+
+  def api_token_configured?
+    ENV["TBDB_API_TOKEN"].present?
+  end
 
   def quota_reset_time_text
     return "" unless @quota_status && @quota_status[:reset_at]

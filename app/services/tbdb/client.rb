@@ -7,7 +7,7 @@ module Tbdb
     VERSION = "0.4"
 
     # Fallback base URI if connection doesn't specify one
-    DEFAULT_BASE_URI = ENV.fetch("TBDB_API_URI", "https://api.tbdb.info").freeze
+    DEFAULT_BASE_URI = ENV.fetch("TBDB_BASE_URL", "https://api.thebookdb.info").freeze
 
     attr_reader :jwt_token, :jwt_expires_at, :base_uri, :last_request_time, :calculated_delay
 
@@ -20,16 +20,18 @@ module Tbdb
       effective_base_uri = base_uri || @connection.api_base_url || DEFAULT_BASE_URI
       @base_uri = URI(effective_base_uri)
 
-      # Verify base URI matches connection's base URI
-      verify_base_uri_match!
-
       # Initialize token fields (will be validated on first request)
       @jwt_token = nil
       @jwt_expires_at = nil
+      @api_token_mode = api_token_authentication?
     end
 
     def user_agent
       "ShelfLife-Bot/#{VERSION} (#{Rails.application.class.module_parent_name})"
+    end
+
+    def api_token_authentication?
+      ENV["TBDB_API_TOKEN"].present?
     end
 
     # Main API methods
@@ -60,6 +62,28 @@ module Tbdb
 
     private
 
+    def ensure_connected!
+      if @api_token_mode
+        ensure_api_connected!
+      else
+        ensure_oauth_connected!
+      end
+    end
+
+    def ensure_api_connected!
+      # For API tokens, we just need to verify the token is present
+      api_token = ENV["TBDB_API_TOKEN"]
+      unless api_token.present?
+        error_msg = "TBDB_API_TOKEN environment variable not set"
+        Rails.logger.error error_msg
+        raise ConnectionRequiredError, error_msg
+      end
+
+      # Load API token for the request
+      load_api_token
+      Rails.logger.debug "Using API token authentication"
+    end
+
     def ensure_oauth_connected!
       # Check if we have OAuth tokens
       unless @connection.access_token.present?
@@ -86,6 +110,9 @@ module Tbdb
     end
 
     def verify_base_uri_match!
+      # Skip URI mismatch check for API token mode since no OAuth registration
+      return if @api_token_mode
+
       # Warn if using different base URI than what connection was registered with
       if @connection.api_base_url.present? && @connection.api_base_url != @base_uri.to_s
         Rails.logger.warn "⚠️  Base URI mismatch: connection=#{@connection.api_base_url}, client=#{@base_uri}"
@@ -98,6 +125,15 @@ module Tbdb
       @jwt_expires_at = @connection.expires_at
 
       Rails.logger.debug "Using OAuth JWT (expires at #{@jwt_expires_at})"
+    end
+
+    def load_api_token
+      # Use the environment variable API token directly
+      @jwt_token = ENV["TBDB_API_TOKEN"]
+      # API tokens don't have expiration dates like JWT tokens
+      @jwt_expires_at = nil
+
+      Rails.logger.debug "Using API token from environment variable"
     end
 
     def refresh_oauth_token
@@ -122,8 +158,8 @@ module Tbdb
     end
 
     def make_request(path, method: :get, params: {}, retry_count: 0)
-      # Ensure we have a valid OAuth connection before making request
-      ensure_oauth_connected!
+      # Ensure we have a valid connection before making request
+      ensure_connected!
 
       throttle_request
 
@@ -216,17 +252,23 @@ module Tbdb
       Rails.logger.error "TBDB API request failed: 401 - Unauthorized"
       log_error_details(response)
 
-      # Mark OAuth connection as invalid
-      error_msg = if @connection.api_base_url.present? && @connection.api_base_url != @base_uri.to_s
-        "OAuth tokens from #{@connection.api_base_url} cannot access #{@base_uri}. Please reconnect to the correct TBDB instance."
+      if @api_token_mode
+        # API token authentication failed
+        error_msg = "API token authentication failed. Please check your TBDB_API_TOKEN environment variable."
+        Rails.logger.error "API token authentication failed: #{error_msg}"
+        raise AuthenticationError, error_msg
       else
-        "OAuth tokens are invalid or expired. Please reconnect to TBDB."
+        # Mark OAuth connection as invalid
+        error_msg = if @connection.api_base_url.present? && @connection.api_base_url != @base_uri.to_s
+          "OAuth tokens from #{@connection.api_base_url} cannot access #{@base_uri}. Please reconnect to the correct TBDB instance."
+        else
+          "OAuth tokens are invalid or expired. Please reconnect to TBDB."
+        end
+
+        Rails.logger.error "Marking OAuth connection as invalid: #{error_msg}"
+        @connection.mark_invalid!(error_msg)
+        raise AuthenticationError, error_msg
       end
-
-      Rails.logger.error "Marking OAuth connection as invalid: #{error_msg}"
-      @connection.mark_invalid!(error_msg)
-
-      raise AuthenticationError, error_msg
     end
 
     def log_error_details(response)
