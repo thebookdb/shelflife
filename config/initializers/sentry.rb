@@ -1,20 +1,28 @@
-if ENV["SENTRY_DSN"].present?
-  Rails.application.configure do
-    config.sentry.dsn = ENV.fetch("SENTRY_DSN")
-    config.sentry.breadcrumbs_logger = [:active_support_logger, :http_logger]
-    config.sentry.send_default_pii = false
+# Sentry Error Tracking
+# Only initialize in production environment and only if DSN is configured
+Rails.application.configure do
+  if Rails.env.production? && ENV['SENTRY_DSN'].present?
+    Sentry.init do |config|
+      config.breadcrumbs_logger = [:active_support_logger, :http_logger]
+      config.dsn = ENV['SENTRY_DSN']
 
-    # Set environment for Sentry
-    config.sentry.environment = Rails.env
+      # Set the environment tag
+      config.environment = Rails.env
 
-    # Enable Sentry in all environments except test
-    config.sentry.enabled_environments = %w[development staging production]
+      # Performance monitoring - enable with low sample rate
+      config.traces_sample_rate = ENV.fetch('SENTRY_TRACES_SAMPLE_RATE', 0.1).to_f
 
-    # Set sample rate for performance monitoring
-    config.sentry.traces_sample_rate = 0.25 if Rails.env.production?
-    config.sentry.traces_sample_rate = 1.0 if Rails.env.development?
+      # Filter out sensitive data
+      config.send_default_pii = false
 
-    # Send session data
-    config.sentry.send_sessions = true if Rails.env.production?
+      # Filter out certain exceptions that are typically noise
+      config.excluded_exceptions += [
+        'ActionController::InvalidAuthenticityToken',
+        'CGI::Session::CookieStore::TamperedWithCookie',
+        'ActionController::UnknownFormat'
+      ]
+    end
+
+    Rails.logger.info "Sentry initialized in production environment"
   end
 end

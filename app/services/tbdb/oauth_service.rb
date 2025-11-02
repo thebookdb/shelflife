@@ -8,10 +8,10 @@ module Tbdb
     class OAuthError < StandardError; end
 
   # OAuth endpoints (authorization, token exchange, etc.)
-  TBDB_OAUTH_URL = ENV.fetch("TBDB_OAUTH_URL", "https://thebookdb.com").freeze
+  TBDB_OAUTH_URL = ENV.fetch("TBDB_OAUTH_URL", "https://thebookdb.info").freeze
 
   # API endpoints (for making authenticated API calls)
-  TBDB_API_URL = ENV.fetch("TBDB_API_URI", "https://api.thebookdb.com").freeze
+  TBDB_API_URL = ENV.fetch("TBDB_API_URI", "https://api.thebookdb.info").freeze
 
   def initialize
     @connection = TbdbConnection.instance

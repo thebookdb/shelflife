@@ -65,8 +65,7 @@ Rails.application.configure do
   # Set host to be used by routes URL helpers.
   routes.default_url_options[:host] = ENV.fetch("APPLICATION_HOST", "example.com")
 
-  # Enable Sentry error reporting
-  config.sentry.enabled = true if ENV["SENTRY_DSN"]
+  # Sentry configuration is handled in config/initializers/sentry.rb
 
   # Specify outgoing SMTP server. Remember to add smtp/* credentials via bin/rails credentials:edit.
   # config.action_mailer.smtp_settings = {
