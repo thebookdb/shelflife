@@ -7,7 +7,10 @@ services:
     environment:
       - RAILS_ENV=production
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
-      - RAILS_LOG_TO_STDOUT=true
+      - APPLICATION_HOST=${APPLICATION_HOST}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - TBDB_API_TOKEN=${TBDB_API_TOKEN}
+      - TBDB_BASE_URL=${TBDB_BASE_URL}
     volumes:
       - ./storage:/rails/storage
       - ./log:/rails/log
@@ -18,3 +21,17 @@ services:
       timeout: 10s
       retries: 3
       start_period: 60s
+
+  jobs:
+    image: ghcr.io/dkam/shelf-life:latest  
+    environment:
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - APPLICATION_HOST=${APPLICATION_HOST}
+      - SENTRY_DSN=${SENTRY_DSN}
+      - TBDB_API_TOKEN=${TBDB_API_TOKEN}
+      - TBDB_BASE_URL=${TBDB_BASE_URL}
+    volumes:
+      - ./storage:/rails/storage
+    command: bundle exec bin/jobs
+    restart: unless-stopped
