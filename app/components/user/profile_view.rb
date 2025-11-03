@@ -103,28 +103,16 @@ class Components::User::ProfileView < Components::Base
               end
             end
 
-            # API Configuration Section
-            div(class: "px-6 py-6 border-t border-gray-200") do
-              h3(class: "text-lg font-medium text-gray-900 mb-6") { "TBDB Integration" }
+            # API Configuration Section - Only show if no API token is configured
+            unless api_token_configured?
+              div(class: "px-6 py-6 border-t border-gray-200") do
+                h3(class: "text-lg font-medium text-gray-900 mb-6") { "TBDB Integration" }
 
-              div(class: "space-y-6") do
-                # TBDB Connection Status
-                div do
-                  dt(class: "text-sm font-medium text-gray-700 mb-2") { "System Connection" }
+                div(class: "space-y-6") do
+                  # TBDB Connection Status
+                  div do
+                    dt(class: "text-sm font-medium text-gray-700 mb-2") { "System Connection" }
 
-                  if api_token_configured?
-                    # API token is configured - show success status
-                    dd(class: "text-xs text-gray-500 mb-3") { "Using API token for product data lookups." }
-                    div(class: "flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded") do
-                      div(class: "flex-1") do
-                        div(class: "text-sm font-medium text-green-800") { "API Token Configured" }
-                        div(class: "text-xs text-green-600 mt-1") { "Product data access via environment variable" }
-                      end
-                      div(class: "flex items-center text-green-600") do
-                        render Components::Shared::IconView.new(name: :check, class: "text-green-600")
-                      end
-                    end
-                  else                    
                     # No API token - show OAuth connection status
                     dd(class: "text-xs text-gray-500 mb-3") { "Shared OAuth connection to TheBookDB.info for product data lookups." }
 
@@ -186,44 +174,44 @@ class Components::User::ProfileView < Components::Base
                       end
                     end
                   end
-                end
 
-                # API Quota Status
-                if @quota_status
-                  div(class: "pt-6 border-t border-gray-200") do
-                    dt(class: "text-sm font-medium text-gray-700 mb-2") { "Daily API Quota" }
-                    dd(class: "text-xs text-gray-500 mb-3") { "Your current TBDB API usage for today" }
+                  # API Quota Status
+                  if @quota_status
+                    div(class: "pt-6 border-t border-gray-200") do
+                      dt(class: "text-sm font-medium text-gray-700 mb-2") { "Daily API Quota" }
+                      dd(class: "text-xs text-gray-500 mb-3") { "Your current TBDB API usage for today" }
 
-                    # Quota progress bar
-                    div(class: "space-y-2") do
-                      div(class: "flex items-center justify-between text-sm") do
-                        span(class: "font-medium text-gray-900") do
-                          plain "#{@quota_status[:remaining]} / #{@quota_status[:limit]} requests remaining"
+                      # Quota progress bar
+                      div(class: "space-y-2") do
+                        div(class: "flex items-center justify-between text-sm") do
+                          span(class: "font-medium text-gray-900") do
+                            plain "#{@quota_status[:remaining]} / #{@quota_status[:limit]} requests remaining"
+                          end
+                          span(class: quota_percentage_color) do
+                            plain "#{@quota_status[:percentage]}%"
+                          end
                         end
-                        span(class: quota_percentage_color) do
-                          plain "#{@quota_status[:percentage]}%"
+
+                        # Progress bar
+                        div(class: "w-full bg-gray-200 rounded-full h-2") do
+                          div(
+                            class: "h-2 rounded-full #{quota_bar_color}",
+                            style: "width: #{@quota_status[:percentage]}%"
+                          )
                         end
-                      end
 
-                      # Progress bar
-                      div(class: "w-full bg-gray-200 rounded-full h-2") do
-                        div(
-                          class: "h-2 rounded-full #{quota_bar_color}",
-                          style: "width: #{@quota_status[:percentage]}%"
-                        )
-                      end
-
-                      # Reset time
-                      if @quota_status[:reset_at]
-                        div(class: "flex items-center justify-between text-xs text-gray-500") do
-                          span { "Resets in #{quota_reset_time_text}" }
-                          span { "Updated #{time_ago_in_words(@quota_status[:updated_at])} ago" }
+                        # Reset time
+                        if @quota_status[:reset_at]
+                          div(class: "flex items-center justify-between text-xs text-gray-500") do
+                            span { "Resets in #{quota_reset_time_text}" }
+                            span { "Updated #{time_ago_in_words(@quota_status[:updated_at])} ago" }
+                          end
                         end
                       end
                     end
                   end
-                end
 
+                end
               end
             end
 
