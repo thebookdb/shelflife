@@ -71,14 +71,14 @@ module Components
             p(class: "text-xs text-gray-400") do
               @scan.scanned_at.strftime("%b %d, %Y")
             end
-            
+
             # Delete scan button
             div(class: "mt-2") do
               form_with url: scan_path(@scan), method: :delete, class: "inline", local: true do |f|
-                f.button "Delete", 
+                f.button "Delete",
                   type: "submit",
                   class: "text-red-600 hover:text-red-800 text-xs",
-                  data: { confirm: "Delete this scan?" }
+                  data: {confirm: "Delete this scan?"}
               end
             end
           end
@@ -89,11 +89,10 @@ module Components
 
       def safe_image_url(attachment)
         # Try to get the image URL, fallback to placeholder for background jobs
-        begin
-          rails_blob_path(attachment, only_path: true) if attachment.attached?
-        rescue
-          "/placeholder-image.jpg" # fallback for background jobs
-        end
+
+        rails_blob_path(attachment, only_path: true) if attachment.attached?
+      rescue
+        "/placeholder-image.jpg" # fallback for background jobs
       end
 
       def time_ago_in_words(time)

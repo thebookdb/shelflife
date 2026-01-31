@@ -90,7 +90,6 @@ class Components::User::ChangePasswordView < Components::Base
                 end
                 div(class: "ml-3") do
                   p(class: "text-sm text-gray-600") do
-                    "After changing your password, you'll remain signed in on this device. "
                     "You may need to sign in again on other devices."
                   end
                 end

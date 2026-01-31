@@ -1,5 +1,6 @@
 class Components::Libraries::EditView < Components::Base
   include Phlex::Rails::Helpers::FormAuthenticityToken
+
   def initialize(library:)
     @library = library
   end
@@ -19,7 +20,7 @@ class Components::Libraries::EditView < Components::Base
             # Display errors if any
             if @library.errors.any?
               div(class: "mb-6 bg-red-50 border border-red-200 rounded-lg p-4") do
-                h3(class: "text-red-800 font-semibold mb-2") { "Error#{@library.errors.count > 1 ? 's' : ''}" }
+                h3(class: "text-red-800 font-semibold mb-2") { "Error#{"s" if @library.errors.count > 1}" }
                 ul(class: "list-disc list-inside text-red-700 text-sm") do
                   @library.errors.full_messages.each do |message|
                     li { message }

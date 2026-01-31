@@ -16,6 +16,7 @@ module Tbdb
 
   class ConnectionRequiredError < StandardError
   end
+
   # Convenience method for creating a client instance
   def self.client
     @client ||= Client.new

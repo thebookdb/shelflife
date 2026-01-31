@@ -2,7 +2,7 @@ require "test_helper"
 
 class ScansControllerTest < ActionDispatch::IntegrationTest
   def sign_in(user)
-    post signin_path, params: { email_address: user.email_address, password: "password" }
+    post signin_path, params: {email_address: user.email_address, password: "password"}
     follow_redirect!
   end
 
@@ -14,7 +14,7 @@ class ScansControllerTest < ActionDispatch::IntegrationTest
 
   test "should create scan" do
     sign_in users(:one)
-    post scans_path, params: { gtin: "1234567890123" }
+    post scans_path, params: {gtin: "1234567890123"}
     assert_response :success
   end
 end

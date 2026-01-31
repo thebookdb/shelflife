@@ -29,21 +29,21 @@ Rails.application.routes.draw do
   delete "/signout", to: "sessions#destroy", as: :signout
 
   # Product management routes
-  resources :products, only: [ :index, :show, :destroy ] do
+  resources :products, only: [:index, :show, :destroy] do
     member do
       post :refresh
     end
   end
 
   # Library management routes
-  resources :libraries, only: [ :index, :show, :edit, :update ] do
+  resources :libraries, only: [:index, :show, :edit, :update] do
     member do
       get :import
       post :import
       get :export
     end
   end
-  resources :library_items, only: [ :show, :edit, :update, :create, :destroy ]
+  resources :library_items, only: [:show, :edit, :update, :create, :destroy]
 
   # Scanner routes
   get "/scanner", to: "scanners#index", as: :scanner
@@ -51,10 +51,10 @@ Rails.application.routes.draw do
   post "/scanner/set_library", to: "scanners#set_library", as: :set_scanner_library
 
   # Scan routes
-  resources :scans, only: [ :index, :create, :destroy ]
+  resources :scans, only: [:index, :create, :destroy]
 
   # Users route (user management)
-  resources :users, only: [ :index, :show, :new, :create ]
+  resources :users, only: [:index, :show, :new, :create]
 
   # User profile routes (singular - current user)
   get "/profile", to: "user#show", as: :profile
@@ -72,12 +72,12 @@ Rails.application.routes.draw do
   # API routes
   namespace :api do
     namespace :v1 do
-      resources :products, only: [ :show, :index ]
-      resources :library_items, only: [ :index, :create, :destroy ]
-      resources :scans, only: [ :index, :create ]
+      resources :products, only: [:show, :index]
+      resources :library_items, only: [:index, :create, :destroy]
+      resources :scans, only: [:index, :create]
     end
   end
 
   # GTIN route - must be last to avoid conflicts
-  get "/:gtin", to: "products#show", constraints: { gtin: /\d{13}/ }
+  get "/:gtin", to: "products#show", constraints: {gtin: /\d{13}/}
 end

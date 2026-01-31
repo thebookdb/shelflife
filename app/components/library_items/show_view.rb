@@ -62,8 +62,14 @@ class Components::LibraryItems::ShowView < Components::Base
                   end
 
                   div(class: "mt-4 space-y-1 text-sm text-gray-600") do
-                    div { plain "Type: "; span(class: "font-medium") { (@product.product_type || "other").humanize } }
-                    div { plain "GTIN: "; span(class: "font-medium") { @product.gtin } }
+                    div {
+                      plain "Type: "
+                      span(class: "font-medium") { (@product.product_type || "other").humanize }
+                    }
+                    div {
+                      plain "GTIN: "
+                      span(class: "font-medium") { @product.gtin }
+                    }
                   end
                 end
               end
@@ -187,7 +193,7 @@ class Components::LibraryItems::ShowView < Components::Base
 
   def format_currency(amount)
     return nil unless amount.present?
-    "$#{'%.2f' % amount}"
+    "$#{"%.2f" % amount}"
   end
 
   def product_icon(product_type)

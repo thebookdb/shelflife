@@ -11,22 +11,22 @@ class LibraryItem < ApplicationRecord
   validates :product_id, presence: true
   validates :library_id, presence: true
   validates :acquisition_price, :replacement_cost, :original_retail_price, :current_market_value,
-            numericality: { greater_than_or_equal_to: 0 }, allow_nil: true
+    numericality: {greater_than_or_equal_to: 0}, allow_nil: true
 
   # Scopes
   scope :recent, -> { order(date_added: :desc) }
   scope :in_library, ->(library) { where(library: library) }
-  scope :virtual_items, -> { joins(:library).where(libraries: { virtual: true }) }
-  scope :physical_items, -> { joins(:library).where(libraries: { virtual: false }) }
-  scope :wishlist_items, -> { joins(:library).where(libraries: { name: "Wishlist" }) }
-  scope :owned_items, -> { joins(:library).where(libraries: { virtual: false }) }
+  scope :virtual_items, -> { joins(:library).where(libraries: {virtual: true}) }
+  scope :physical_items, -> { joins(:library).where(libraries: {virtual: false}) }
+  scope :wishlist_items, -> { joins(:library).where(libraries: {name: "Wishlist"}) }
+  scope :owned_items, -> { joins(:library).where(libraries: {virtual: false}) }
   scope :favorites, -> { where(is_favorite: true) }
   scope :by_condition, ->(condition) { where(condition: condition) }
-  scope :with_condition, ->(condition_name) { joins(:condition).where(conditions: { name: condition_name }) }
+  scope :with_condition, ->(condition_name) { joins(:condition).where(conditions: {name: condition_name}) }
   scope :overdue, -> { where("due_date < ?", Date.current) }
-  scope :with_status, ->(status_name) { joins(:item_status).where(item_statuses: { name: status_name }) }
-  scope :available, -> { joins(:item_status).where(item_statuses: { name: "Available" }) }
-  scope :checked_out, -> { joins(:item_status).where(item_statuses: { name: "Checked Out" }) }
+  scope :with_status, ->(status_name) { joins(:item_status).where(item_statuses: {name: status_name}) }
+  scope :available, -> { joins(:item_status).where(item_statuses: {name: "Available"}) }
+  scope :checked_out, -> { joins(:item_status).where(item_statuses: {name: "Checked Out"}) }
 
   before_create :set_date_added
   before_save :update_last_accessed
@@ -58,10 +58,10 @@ class LibraryItem < ApplicationRecord
   def check_out_to(person, due_date = nil)
     return false unless available_for_checkout?
     return false if virtual_item?
-    
+
     checked_out_status = ItemStatus.find_by(name: "Checked Out")
     return false unless checked_out_status
-    
+
     update(
       item_status: checked_out_status,
       lent_to: person,
@@ -72,10 +72,10 @@ class LibraryItem < ApplicationRecord
   def check_in
     return false unless checked_out?
     return false if virtual_item?
-    
+
     available_status = ItemStatus.find_by(name: "Available")
     return false unless available_status
-    
+
     update(
       item_status: available_status,
       lent_to: nil,

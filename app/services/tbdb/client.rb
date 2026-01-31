@@ -40,7 +40,7 @@ module Tbdb
     end
 
     def search_products(query, options = {})
-      params = { q: query }
+      params = {q: query}
       params[:ptype] = options[:product_type] if options[:product_type]
       params[:per_page] = [options[:per_page] || 20, 100].min
       params[:page] = [options[:page] || 1, 1].max
@@ -101,7 +101,7 @@ module Tbdb
 
       # If connection is marked invalid but token is NOT expired, try using it anyway
       # A 401 response will re-mark it invalid, but if it works, we mark it verified
-      if @connection.status == 'invalid'
+      if @connection.status == "invalid"
         Rails.logger.debug "Connection marked invalid but token not expired - will attempt request and verify on success"
       end
 
@@ -213,7 +213,7 @@ module Tbdb
       case response
       when Net::HTTPSuccess
         # Mark connection as verified on successful request
-        if @connection.status == 'invalid'
+        if @connection.status == "invalid"
           Rails.logger.info "Request succeeded - marking connection as verified"
           @connection.mark_verified!
         end
@@ -272,12 +272,10 @@ module Tbdb
     end
 
     def log_error_details(response)
-      begin
-        error_data = JSON.parse(response.body)
-        Rails.logger.error "Error details: #{error_data.inspect}"
-      rescue JSON::ParserError
-        Rails.logger.error "Response: #{response.body}"
-      end
+      error_data = JSON.parse(response.body)
+      Rails.logger.error "Error details: #{error_data.inspect}"
+    rescue JSON::ParserError
+      Rails.logger.error "Response: #{response.body}"
     end
 
     def throttle_request
@@ -296,7 +294,7 @@ module Tbdb
 
     def calculate_backoff_time(retry_count)
       # Exponential backoff: 2^retry_count + 1 second (1s buffer for rate limit)
-      base_wait = 2 ** retry_count
+      base_wait = 2**retry_count
       base_wait + 1
     end
 
@@ -352,7 +350,7 @@ module Tbdb
         0.0
       end
 
-      Rails.logger.debug "TBDB quota: #{remaining}/#{limit || 'unknown'} remaining (#{percentage}%)"
+      Rails.logger.debug "TBDB quota: #{remaining}/#{limit || "unknown"} remaining (#{percentage}%)"
 
       # Store quota info on the connection model
       @connection.update_quota(
@@ -362,7 +360,7 @@ module Tbdb
       )
 
       if remaining == 0
-        Rails.logger.error "❌ TBDB quota exhausted: #{remaining}/#{limit || 'unknown'} remaining"
+        Rails.logger.error "❌ TBDB quota exhausted: #{remaining}/#{limit || "unknown"} remaining"
       elsif limit && limit > 0 && remaining < (limit * 0.1)
         Rails.logger.warn "⚠️  TBDB quota low: #{remaining}/#{limit} remaining (#{percentage}%)"
       end
@@ -385,7 +383,7 @@ module Tbdb
         Rails.logger.warn "Rate limited (429), retrying in #{wait_time}s (attempt #{retry_count + 1}/3)"
 
         sleep(wait_time)
-        return make_request(path, method: method, params: params, retry_count: retry_count + 1)
+        make_request(path, method: method, params: params, retry_count: retry_count + 1)
       else # Rate limit but out of retries
         error = RateLimitError.new("TBDB API rate limit exceeded after #{retry_count + 1} attempts")
         error.retry_after = retry_after

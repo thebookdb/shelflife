@@ -81,7 +81,7 @@ class Components::Scanners::AdaptiveView < Components::Base
           border-radius: 8px !important;
           max-width: 300px !important;
         }
-        
+
         @media (orientation: landscape) {
           #adaptive-scanner .qr-scanner-ui {
             right: 10px !important;
@@ -103,7 +103,7 @@ class Components::Scanners::AdaptiveView < Components::Base
       div(class: "h-full flex flex-col md:hidden") do
         render_portrait_layout
       end
-      
+
       # Landscape Layout (desktop and rotated mobile)
       div(class: "h-full md:flex hidden") do
         render_landscape_layout
@@ -263,10 +263,9 @@ class Components::Scanners::AdaptiveView < Components::Base
         data_adaptive_barcode_scanner_target: "libraryStatus"
       ) do
         h3(class: "font-semibold text-gray-800 mb-3") { "Library Settings" }
-        
+
         if Current.library
           p(class: "text-sm text-blue-800 mb-3") do
-            "Scanned items will be added to: "
             span(class: "font-semibold") { Current.library.name }
           end
         else
@@ -310,7 +309,7 @@ class Components::Scanners::AdaptiveView < Components::Base
               end
             end
           end
-          
+
           div(class: "mt-4 pt-4 border-t") do
             a(
               href: "/scans",

@@ -16,9 +16,9 @@ class Library < ApplicationRecord
 
   def self.default_libraries
     [
-      { name: "Home", description: "Books and media at home", virtual: false },
-      { name: "Work", description: "Books and media at work", virtual: false },
-      { name: "Wishlist", description: "Items I want to acquire", virtual: true }
+      {name: "Home", description: "Books and media at home", virtual: false},
+      {name: "Work", description: "Books and media at work", virtual: false},
+      {name: "Wishlist", description: "Items I want to acquire", virtual: true}
     ]
   end
 

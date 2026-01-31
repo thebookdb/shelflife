@@ -59,22 +59,21 @@ class UserController < ApplicationController
     setting_enabled = params[:user][:hide_invalid_barcodes] == "true"
 
     success = @user.update_setting("hide_invalid_barcodes", setting_enabled)
-    
+
     if success
-      render json: { 
-        success: true, 
+      render json: {
+        success: true,
         message: "Setting updated successfully",
         setting_value: @user.hide_invalid_barcodes?
       }
     else
-      render json: { 
-        success: false, 
-        message: "Failed to update setting" 
+      render json: {
+        success: false,
+        message: "Failed to update setting"
       }, status: :unprocessable_entity
     end
   end
 
-  
   private
 
   def user_params

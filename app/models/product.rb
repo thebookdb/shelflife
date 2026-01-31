@@ -5,7 +5,7 @@ class Product < ApplicationRecord
 
   has_one_attached :cover_image
 
-  validates :gtin, presence: true, uniqueness: true, format: { with: /\A\d{13}\z/, message: "must be 13 digits" }
+  validates :gtin, presence: true, uniqueness: true, format: {with: /\A\d{13}\z/, message: "must be 13 digits"}
   # validates :title, presence: true, on: :update
   validates :product_type, presence: true
 

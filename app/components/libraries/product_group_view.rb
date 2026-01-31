@@ -49,7 +49,7 @@ class Components::Libraries::ProductGroupView < Components::Base
         div(class: "flex-shrink-0") do
           div(class: "bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold") do
             plain "#{@library_items.count} "
-            plain @library_items.count == 1 ? "copy" : "copies"
+            plain (@library_items.count == 1) ? "copy" : "copies"
           end
         end
       end
@@ -57,7 +57,7 @@ class Components::Libraries::ProductGroupView < Components::Base
       # List of copies
       div(class: "bg-gray-50") do
         @library_items.each_with_index do |item, index|
-          div(class: "px-4 py-3 #{index > 0 ? 'border-t border-gray-200' : ''}") do
+          div(class: "px-4 py-3 #{"border-t border-gray-200" if index > 0}") do
             div(class: "flex items-center justify-between") do
               # Copy info
               div(class: "flex-1") do

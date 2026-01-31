@@ -49,7 +49,7 @@ class Components::Shared::NavigationView < Components::Base
         end
         a(
           href: signout_path,
-          data: { turbo_method: :delete },
+          data: {turbo_method: :delete},
           class: "text-primary-600 hover:text-primary-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
         ) do
           "Sign out"

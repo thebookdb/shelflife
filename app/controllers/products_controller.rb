@@ -1,11 +1,11 @@
 class ProductsController < ApplicationController
-  before_action :find_or_create_product, only: [ :show ]
+  before_action :find_or_create_product, only: [:show]
 
   def index
     # Get recent products from user's scans
     recent_products = if Current.user
       Product.joins(:scans)
-        .where(scans: { user: Current.user })
+        .where(scans: {user: Current.user})
         .order("scans.scanned_at DESC")
         .distinct
         .limit(5)

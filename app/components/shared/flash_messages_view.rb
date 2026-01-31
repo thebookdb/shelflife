@@ -6,7 +6,7 @@ class Components::Shared::FlashMessagesView < Components::Base
   def view_template
     return unless flash.any?
 
-    div(class: "fixed top-20 left-1/2 transform -translate-x-1/2 z-40 max-w-md w-full px-4") do
+    div(class: "fixed top-20 left-1/2 transform -translate-x-1/2 z-40 max-w-2xl w-full px-4 sm:px-6 lg:px-8") do
       flash.each do |type, message|
         div(class: flash_classes(type)) do
           message
@@ -19,7 +19,7 @@ class Components::Shared::FlashMessagesView < Components::Base
 
   def flash_classes(type)
     base_classes = "px-4 py-3 rounded-md text-sm font-medium"
-    
+
     case type.to_s
     when "notice"
       "#{base_classes} bg-green-50 text-green-700 border border-green-200"

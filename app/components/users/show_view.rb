@@ -20,7 +20,7 @@ class Components::Users::ShowView < Components::Base
                 end
                 div(class: "ml-4") do
                   h1(class: "text-2xl font-bold text-gray-900") { @user.email_address }
-                  p(class: "text-gray-600") { "Member since #{@user.created_at.strftime('%B %d, %Y')}" }
+                  p(class: "text-gray-600") { "Member since #{@user.created_at.strftime("%B %d, %Y")}" }
                 end
               end
             end
@@ -46,7 +46,7 @@ class Components::Users::ShowView < Components::Base
                   dd(class: "mt-1 text-sm text-gray-900") do
                     if @user.scans.any?
                       recent_scan = @user.scans.order(created_at: :desc).first
-                      "Last scan: #{recent_scan.created_at.strftime('%B %d, %Y at %I:%M %p')}"
+                      "Last scan: #{recent_scan.created_at.strftime("%B %d, %Y at %I:%M %p")}"
                     else
                       "No scans yet"
                     end

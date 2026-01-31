@@ -7,29 +7,29 @@ class CreateLibraryItems < ActiveRecord::Migration[8.0]
       t.string :location
       t.text :notes
       t.datetime :date_added, default: -> { "CURRENT_TIMESTAMP" }
-      
+
       # Acquisition tracking
       t.date :acquisition_date
       t.references :acquisition_source, null: true, foreign_key: true
       t.decimal :acquisition_price, precision: 8, scale: 2
       t.references :ownership_status, null: true, foreign_key: true
       t.string :copy_identifier
-      
+
       # Enhanced condition tracking
       t.text :condition_notes
       t.date :last_condition_check
       t.text :damage_description
-      
-      # Status and circulation  
+
+      # Status and circulation
       t.references :item_status, null: true, foreign_key: true
       t.string :lent_to
       t.date :due_date
-      
+
       # Value tracking
       t.decimal :replacement_cost, precision: 8, scale: 2
       t.decimal :original_retail_price, precision: 8, scale: 2
       t.decimal :current_market_value, precision: 8, scale: 2
-      
+
       # Metadata
       t.text :private_notes
       t.string :tags
@@ -39,6 +39,6 @@ class CreateLibraryItems < ActiveRecord::Migration[8.0]
       t.timestamps
     end
 
-    add_index :library_items, [ :product_id, :library_id ]
+    add_index :library_items, [:product_id, :library_id]
   end
 end

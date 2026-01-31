@@ -11,7 +11,7 @@ class LibrariesController < ApplicationController
 
     # Filter out invalid barcodes if user has that setting enabled
     if Current.user.hide_invalid_barcodes?
-      library_items = library_items.joins(:product).where(products: { valid_barcode: true })
+      library_items = library_items.joins(:product).where(products: {valid_barcode: true})
     end
 
     # Group library items by product for display
@@ -36,15 +36,15 @@ class LibrariesController < ApplicationController
 
   def update
     @library = Library.find(params[:id])
-    
+
     # Handle bulk barcode input if provided
     bulk_barcodes = params.dig(:library, :bulk_barcodes)
     if bulk_barcodes.present?
       begin
         import_result = process_bulk_barcodes(@library, bulk_barcodes)
         if @library.update(library_params.except(:bulk_barcodes))
-          redirect_to library_path(@library), 
-                      notice: "Library updated successfully! Added #{import_result[:created]} items, skipped #{import_result[:skipped]} duplicates."
+          redirect_to library_path(@library),
+            notice: "Library updated successfully! Added #{import_result[:created]} items, skipped #{import_result[:skipped]} duplicates."
         else
           render Components::Libraries::EditView.new(library: @library), status: :unprocessable_entity
         end
@@ -52,21 +52,19 @@ class LibrariesController < ApplicationController
         @library.errors.add(:bulk_barcodes, "Import failed: #{e.message}")
         render Components::Libraries::EditView.new(library: @library), status: :unprocessable_entity
       end
+    elsif @library.update(library_params)
+      redirect_to library_path(@library), notice: "Library updated successfully."
     else
-      if @library.update(library_params)
-        redirect_to library_path(@library), notice: "Library updated successfully."
-      else
-        render Components::Libraries::EditView.new(library: @library), status: :unprocessable_entity
-      end
+      render Components::Libraries::EditView.new(library: @library), status: :unprocessable_entity
     end
   end
 
   def import
     @library = Library.find(params[:id])
-    
+
     if request.post?
       file = params[:file]
-      
+
       if file.nil?
         redirect_to import_library_path(@library), alert: "Please select a file to import."
         return
@@ -74,9 +72,9 @@ class LibrariesController < ApplicationController
 
       begin
         import_result = LibraryImportService.new(@library, file, Current.user).call
-        
-        redirect_to library_path(@library), 
-                    notice: "Import completed! Added #{import_result[:created]} items, skipped #{import_result[:skipped]} duplicates."
+
+        redirect_to library_path(@library),
+          notice: "Import completed! Added #{import_result[:created]} items, skipped #{import_result[:skipped]} duplicates."
       rescue => e
         redirect_to import_library_path(@library), alert: "Import failed: #{e.message}"
       end
@@ -87,13 +85,13 @@ class LibrariesController < ApplicationController
 
   def export
     @library = Library.find(params[:id])
-    
+
     respond_to do |format|
       format.csv do
         csv_data = LibraryExportService.new(@library).call
-        send_data csv_data, 
-                  filename: "#{@library.name.parameterize}-#{Date.current}.csv",
-                  type: 'text/csv'
+        send_data csv_data,
+          filename: "#{@library.name.parameterize}-#{Date.current}.csv",
+          type: "text/csv"
       end
     end
   end
@@ -108,37 +106,37 @@ class LibrariesController < ApplicationController
     gtins = extract_gtins_from_text(bulk_barcodes_text)
     created_count = 0
     skipped_count = 0
-    
+
     gtins.each do |gtin|
       next unless valid_gtin?(gtin)
-      
+
       # Skip if this GTIN already exists in the library
-      if library.library_items.joins(:product).exists?(products: { gtin: gtin })
+      if library.library_items.joins(:product).exists?(products: {gtin: gtin})
         skipped_count += 1
         next
       end
-      
+
       # Find or create product
       product = find_or_create_product(gtin)
       next unless product
-      
+
       # Create library item
       LibraryItem.create!(
         library: library,
         product: product
       )
-      
+
       # Create scan record for the user
       Scan.create!(
         user: Current.user,
         product: product,
         scanned_at: Time.current
       )
-      
+
       created_count += 1
     end
-    
-    { created: created_count, skipped: skipped_count }
+
+    {created: created_count, skipped: skipped_count}
   end
 
   def extract_gtins_from_text(text)
@@ -151,6 +149,6 @@ class LibrariesController < ApplicationController
   end
 
   def find_or_create_product(gtin)
-    Product.findd(gtin, title: "Unknown Product (#{gtin})", product_type: 'other')
+    Product.findd(gtin, title: "Unknown Product (#{gtin})", product_type: "other")
   end
 end

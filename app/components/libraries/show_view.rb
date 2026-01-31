@@ -1,6 +1,7 @@
 class Components::Libraries::ShowView < Components::Base
   include ActionView::Helpers::FormTagHelper
   include Phlex::Rails::Helpers::TurboStreamFrom
+
   def initialize(library:, products: [], grouped_items: {}, pagy: nil)
     @library = library
     @products = products
@@ -11,10 +12,10 @@ class Components::Libraries::ShowView < Components::Base
   def view_template
     div(class: "min-h-screen bg-gray-50") do
       render Components::Shared::NavigationView.new
-      
+
       # Subscribe to library updates for real-time product enrichment
       turbo_cable_stream_source(
-        channel: "Turbo::StreamsChannel", 
+        channel: "Turbo::StreamsChannel",
         signed_stream_name: Turbo::StreamsChannel.signed_stream_name("library_#{@library.id}")
       )
 
@@ -77,51 +78,50 @@ class Components::Libraries::ShowView < Components::Base
 
   def render_pagination
     nav(class: "flex items-center gap-1 text-sm") do
-        # Previous link
-        if @pagy.prev
-          a(href: library_path(@library, page: @pagy.prev),
-            class: "text-blue-600 hover:text-blue-800 hover:underline px-2") do
-            "← Previous"
+      # Previous link
+      if @pagy.prev
+        a(href: library_path(@library, page: @pagy.prev),
+          class: "text-blue-600 hover:text-blue-800 hover:underline px-2") do
+          "← Previous"
+        end
+      else
+        span(class: "text-gray-400 px-2") do
+          "← Previous"
+        end
+      end
+
+      span(class: "text-gray-400 mx-1") { "|" }
+
+      # Page numbers
+      start_page = [@pagy.page - 2, 1].max
+      end_page = [@pagy.page + 2, @pagy.pages].min
+
+      (start_page..end_page).each do |page_num|
+        if page_num == @pagy.page
+          span(class: "font-semibold text-gray-900 px-2") do
+            page_num.to_s
           end
         else
-          span(class: "text-gray-400 px-2") do
-            "← Previous"
-          end
-        end
-
-        span(class: "text-gray-400 mx-1") { "|" }
-
-        # Page numbers
-        start_page = [@pagy.page - 2, 1].max
-        end_page = [@pagy.page + 2, @pagy.pages].min
-
-        (start_page..end_page).each do |page_num|
-          if page_num == @pagy.page
-            span(class: "font-semibold text-gray-900 px-2") do
-              page_num.to_s
-            end
-          else
-            a(href: library_path(@library, page: page_num),
-              class: "text-blue-600 hover:text-blue-800 hover:underline px-2") do
-              page_num.to_s
-            end
-          end
-        end
-
-        span(class: "text-gray-400 mx-1") { "|" }
-
-        # Next link
-        if @pagy.next
-          a(href: library_path(@library, page: @pagy.next),
+          a(href: library_path(@library, page: page_num),
             class: "text-blue-600 hover:text-blue-800 hover:underline px-2") do
-            "Next →"
-          end
-        else
-          span(class: "text-gray-400 px-2") do
-            "Next →"
+            page_num.to_s
           end
         end
       end
-    end
 
+      span(class: "text-gray-400 mx-1") { "|" }
+
+      # Next link
+      if @pagy.next
+        a(href: library_path(@library, page: @pagy.next),
+          class: "text-blue-600 hover:text-blue-800 hover:underline px-2") do
+          "Next →"
+        end
+      else
+        span(class: "text-gray-400 px-2") do
+          "Next →"
+        end
+      end
+    end
+  end
 end

@@ -4,7 +4,7 @@ class ScansController < ApplicationController
 
     # Filter out invalid barcodes if user has that setting enabled
     if Current.user.hide_invalid_barcodes?
-      recent_scans = recent_scans.joins(:product).where(products: { valid_barcode: true })
+      recent_scans = recent_scans.joins(:product).where(products: {valid_barcode: true})
     end
 
     render Components::Scans::IndexView.new(recent_scans: recent_scans)
@@ -63,7 +63,7 @@ class ScansController < ApplicationController
   def destroy
     @scan = Current.user.scans.find(params[:id])
     @scan.destroy
-    
+
     redirect_to scans_path, notice: "Scan deleted successfully."
   rescue ActiveRecord::RecordNotFound
     redirect_to scans_path, alert: "Scan not found."

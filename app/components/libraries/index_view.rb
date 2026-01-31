@@ -49,7 +49,7 @@ class Components::Libraries::IndexView < Components::Base
 
           div(class: "flex items-center text-sm text-gray-500") do
             span(class: "bg-gray-100 px-3 py-1 rounded-full") do
-              "#{item_count} #{'item'.pluralize(item_count)}"
+              "#{item_count} #{"item".pluralize(item_count)}"
             end
           end
         end

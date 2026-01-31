@@ -60,7 +60,7 @@ class Components::Libraries::LibraryItemView < Components::Base
           f.button "Remove",
             type: "submit",
             class: "text-red-600 hover:text-red-800",
-            data: { confirm: "Remove from library?" }
+            data: {confirm: "Remove from library?"}
         end
       end
     end

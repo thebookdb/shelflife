@@ -303,7 +303,6 @@ class Components::Scanners::IndexView < Components::Base
 
         if Current.library
           p(class: "text-sm text-blue-800 mb-3") do
-            "Scanned items will be added to: "
             span(class: "font-semibold") { Current.library.name }
           end
         else

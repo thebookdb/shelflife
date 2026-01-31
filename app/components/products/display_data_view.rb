@@ -140,7 +140,7 @@ class Components::Products::DisplayDataView < Components::Base
             div(class: "text-sm text-purple-700") do
               plain "📊 Daily API quota exhausted. "
               if retry_at
-                plain "Will retry at #{Time.parse(retry_at).strftime('%I:%M %p')}."
+                plain "Will retry at #{Time.parse(retry_at).strftime("%I:%M %p")}."
               else
                 plain "Will retry automatically when quota resets."
               end
@@ -155,9 +155,9 @@ class Components::Products::DisplayDataView < Components::Base
                 plain "📚 API rate limit reached. Data fetching will resume "
                 if retry_at
                   if retry_at.is_a?(String)
-                    plain "at #{Time.parse(retry_at).strftime('%I:%M %p')}"
+                    plain "at #{Time.parse(retry_at).strftime("%I:%M %p")}"
                   else
-                    plain "at #{retry_at.strftime('%I:%M %p')}"
+                    plain "at #{retry_at.strftime("%I:%M %p")}"
                   end
                 else
                   plain "automatically"

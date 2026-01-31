@@ -31,7 +31,7 @@ class Components::LibraryItems::EditView < Components::Base
             # Display errors if any
             if @library_item.errors.any?
               div(class: "mb-6 bg-red-50 border border-red-200 rounded-lg p-4") do
-                h3(class: "text-red-800 font-semibold mb-2") { "Error#{@library_item.errors.count > 1 ? 's' : ''}" }
+                h3(class: "text-red-800 font-semibold mb-2") { "Error#{"s" if @library_item.errors.count > 1}" }
                 ul(class: "list-disc list-inside text-red-700 text-sm") do
                   @library_item.errors.full_messages.each do |message|
                     li { message }
@@ -108,7 +108,7 @@ class Components::LibraryItems::EditView < Components::Base
                     ) do
                       option(value: "", selected: @library_item.location.blank?)
                       # Get distinct locations from existing library items
-                      LibraryItem.where.not(location: [nil, '']).distinct.pluck(:location).sort.each do |location|
+                      LibraryItem.where.not(location: [nil, ""]).distinct.pluck(:location).sort.each do |location|
                         option(
                           value: location,
                           selected: @library_item.location == location

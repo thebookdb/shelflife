@@ -11,8 +11,8 @@ class Components::Products::DisplayView < Components::Base
     # Subscribe to product updates - keep outside the frame content
     turbo_stream_from "product_#{@product.id}"
 
-    # Main container that won't be replaced
-    div(id: "product-container-#{@product.id}", data: { product_id: @product.id }) do
+    # Main container with proper centering
+    div(id: "product-container-#{@product.id}", data: {product_id: @product.id}, class: "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8") do
       div(class: "bg-white rounded-lg shadow-md overflow-hidden") do
         # Product data section - uses DisplayDataView for consistency
         turbo_frame(id: "product-data") do
@@ -36,7 +36,7 @@ class Components::Products::DisplayView < Components::Base
                 div(class: "space-y-2") do
                   current_library_items.each do |item|
                     div(class: "flex justify-between items-center text-sm") do
-                      a(href: library_path(item.library), class: "text-green-700 hover:text-green-900 hover:underline font-medium", data: { turbo_frame: "_top" }) { item.library.name }
+                      a(href: library_path(item.library), class: "text-green-700 hover:text-green-900 hover:underline font-medium", data: {turbo_frame: "_top"}) { item.library.name }
                       if item.condition.present?
                         span(class: "text-green-600 text-xs bg-green-100 px-2 py-1 rounded") { item.condition }
                       end

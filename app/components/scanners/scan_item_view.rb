@@ -22,7 +22,7 @@ class Components::Scanners::ScanItemView < Components::Base
     div(
       id: @scan ? dom_id(@scan) : nil,
       class: "p-3 hover:bg-gray-50 transition-colors",
-      data: { scan_id: @scan&.id }
+      data: {scan_id: @scan&.id}
     ) do
       div(class: "flex items-center gap-3") do
         # Compact product image
@@ -64,7 +64,7 @@ class Components::Scanners::ScanItemView < Components::Base
             if @scan.product.library_items.any?
               libraries = @scan.product.library_items.includes(:library).map(&:library).map(&:name)
               span(class: "text-xs text-green-600 font-medium") do
-                "In #{libraries.join(', ')}"
+                "In #{libraries.join(", ")}"
               end
             else
               span(class: "text-xs text-gray-400") { "Not in library" }
@@ -74,15 +74,15 @@ class Components::Scanners::ScanItemView < Components::Base
 
         # Quick action button
         div(class: "flex-shrink-0") do
-          unless @scan.product.library_items.any?
+          if @scan.product.library_items.any?
+            span(class: "text-green-600 text-xs") { "✓" }
+          else
             button(
               type: "button",
               data_action: "click->barcode-scanner#quickAddToLibrary",
               data_product_id: @scan.product.id,
               class: "bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2 py-1 rounded-md font-medium transition-colors"
             ) { "Add" }
-          else
-            span(class: "text-green-600 text-xs") { "✓" }
           end
         end
       end
@@ -93,29 +93,29 @@ class Components::Scanners::ScanItemView < Components::Base
     # Template for JavaScript to clone and populate
     div(
       class: "p-3 hover:bg-gray-50 transition-colors",
-      data: { template: "scan-item" }
+      data: {template: "scan-item"}
     ) do
       div(class: "flex items-center gap-3") do
         # Product image placeholder
         div(class: "flex-shrink-0") do
           div(class: "w-10 h-12 bg-gray-200 rounded flex items-center justify-center") do
-            span(class: "text-lg", data: { template_field: "icon" }) { "📚" }
+            span(class: "text-lg", data: {template_field: "icon"}) { "📚" }
           end
         end
 
         # Product details
         div(class: "flex-1 min-w-0") do
           h3(class: "font-medium text-gray-900 text-sm leading-tight truncate") do
-            span(data: { template_field: "title" }) { "Loading..." }
+            span(data: {template_field: "title"}) { "Loading..." }
           end
 
           p(class: "text-xs text-gray-600 truncate") do
-            span(data: { template_field: "author" }) { "" }
+            span(data: {template_field: "author"}) { "" }
           end
 
           div(class: "flex items-center justify-between mt-1") do
             span(class: "text-xs text-gray-400") { "Just now" }
-            span(class: "text-xs text-gray-400", data: { template_field: "status" }) { "Checking..." }
+            span(class: "text-xs text-gray-400", data: {template_field: "status"}) { "Checking..." }
           end
         end
 
@@ -124,7 +124,7 @@ class Components::Scanners::ScanItemView < Components::Base
           button(
             type: "button",
             data_action: "click->barcode-scanner#quickAddToLibrary",
-            data: { template_field: "add_button" },
+            data: {template_field: "add_button"},
             class: "bg-green-100 hover:bg-green-200 text-green-700 text-xs px-2 py-1 rounded-md font-medium transition-colors"
           ) { "Add" }
         end

@@ -2,7 +2,7 @@ class TbdbConnection < ApplicationRecord
   # Singleton pattern - only one TBDB connection per ShelfLife instance
   # This connection is used for all TBDB API product data lookups
   # See app/services/tbdb for tbdb client, oauth service and error definitions.
-  
+
   VERIFICATION_TTL = 10.minutes
 
   def self.instance
@@ -31,7 +31,7 @@ class TbdbConnection < ApplicationRecord
       true
     else
       # OAuth mode - check tokens and status
-      access_token.present? && status == 'connected'
+      access_token.present? && status == "connected"
     end
   end
 
@@ -55,7 +55,7 @@ class TbdbConnection < ApplicationRecord
   # Mark connection as verified
   def mark_verified!
     update!(
-      status: 'connected',
+      status: "connected",
       verified_at: Time.current,
       last_error: nil
     )
@@ -64,7 +64,7 @@ class TbdbConnection < ApplicationRecord
   # Mark connection as invalid with error message
   def mark_invalid!(error_message)
     update!(
-      status: 'invalid',
+      status: "invalid",
       last_error: error_message,
       quota_remaining: nil,
       quota_limit: nil,
@@ -80,7 +80,7 @@ class TbdbConnection < ApplicationRecord
       access_token: nil,
       refresh_token: nil,
       expires_at: nil,
-      status: 'connected',
+      status: "connected",
       verified_at: nil,
       last_error: nil
     )
@@ -95,7 +95,7 @@ class TbdbConnection < ApplicationRecord
       refresh_token: nil,
       expires_at: nil,
       api_base_url: nil,
-      status: 'connected',
+      status: "connected",
       verified_at: nil,
       last_error: nil,
       quota_remaining: nil,

@@ -1,4 +1,4 @@
-require 'csv'
+require "csv"
 
 class LibraryExportService
   def initialize(library)
@@ -9,20 +9,20 @@ class LibraryExportService
     CSV.generate(headers: true) do |csv|
       # Add header row
       csv << [
-        'GTIN',
-        'Title',
-        'Author',
-        'Product Type',
-        'Publisher',
-        'Publication Date',
-        'Condition',
-        'Location',
-        'Acquisition Date',
-        'Acquisition Source',
-        'Acquisition Price',
-        'Notes'
+        "GTIN",
+        "Title",
+        "Author",
+        "Product Type",
+        "Publisher",
+        "Publication Date",
+        "Condition",
+        "Location",
+        "Acquisition Date",
+        "Acquisition Source",
+        "Acquisition Price",
+        "Notes"
       ]
-      
+
       # Add data rows
       @library.library_items.includes(:product).find_each do |library_item|
         product = library_item.product

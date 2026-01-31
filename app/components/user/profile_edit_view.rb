@@ -57,7 +57,6 @@ class Components::User::ProfileEditView < Components::Base
               end
             end
 
-            
             div(class: "px-6 py-6") do
               form_with(model: @user, url: profile_path, method: :patch, local: true, class: "space-y-6") do |f|
                 div(class: "hidden") do

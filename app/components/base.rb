@@ -5,10 +5,10 @@ class Components::Base < Phlex::HTML
   include Phlex::Rails::Helpers::Routes
   include Phlex::Rails::Helpers::FormWith
   include Rails.application.routes.url_helpers
-  
+
   # Add Rails URL helpers with default options
   def default_url_options
-    { host: 'localhost', port: 3000 }
+    {host: "localhost", port: 3000}
   end
 
   register_element :turbo_frame

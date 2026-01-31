@@ -25,8 +25,7 @@ class Components::Auth::SigninView < Components::Base
               f.email_field(:email_address,
                 required: true,
                 class: "mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm",
-                placeholder: "Email address"
-              )
+                placeholder: "Email address")
             end
 
             div do
@@ -36,20 +35,17 @@ class Components::Auth::SigninView < Components::Base
               f.password_field(:password,
                 required: true,
                 class: "mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm",
-                placeholder: "Password"
-              )
+                placeholder: "Password")
             end
           end
 
           div do
             f.submit("Sign in",
-              class: "group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors"
-            )
+              class: "group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors")
           end
 
           div(class: "text-center") do
             span(class: "text-sm text-gray-600") do
-              "Don't have an account? "
               a(href: signup_path, class: "font-medium text-primary-600 hover:text-primary-500") do
                 "Sign up"
               end

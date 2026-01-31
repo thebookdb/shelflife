@@ -17,13 +17,13 @@ class CreateConditionsAndConvertLibraryItemCondition < ActiveRecord::Migration[8
     reversible do |dir|
       dir.up do
         # Create conditions from existing unique values
-        existing_conditions = LibraryItem.where.not(condition: [nil, '']).distinct.pluck(:condition)
+        existing_conditions = LibraryItem.where.not(condition: [nil, ""]).distinct.pluck(:condition)
         existing_conditions.each_with_index do |condition_name, index|
           Condition.create!(name: condition_name, sort_order: index)
         end
 
         # Update library_items to use new condition_id
-        LibraryItem.where.not(condition: [nil, '']).find_each do |item|
+        LibraryItem.where.not(condition: [nil, ""]).find_each do |item|
           condition_record = Condition.find_by(name: item.condition)
           item.update_column(:condition_id, condition_record.id) if condition_record
         end

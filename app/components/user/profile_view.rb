@@ -1,6 +1,7 @@
 class Components::User::ProfileView < Components::Base
   include Phlex::Rails::Helpers::TimeAgoInWords
   include Phlex::Rails::Helpers::DistanceOfTimeInWords
+
   # include Rails.application.routes.url_helpers
 
   def initialize(user:, connection:, quota_status: nil)
@@ -62,13 +63,13 @@ class Components::User::ProfileView < Components::Base
             # Settings Section
             div(class: "px-6 py-6 border-t border-gray-200") do
               h3(class: "text-lg font-medium text-gray-900 mb-6") { "Settings" }
-              
+
               form_with(
                 model: @user,
                 url: "/profile/settings",
                 method: :patch,
                 local: false,
-                data: { controller: "settings-form" },
+                data: {controller: "settings-form"},
                 class: "space-y-4"
               ) do |form|
                 # Hide invalid barcodes setting
@@ -83,7 +84,7 @@ class Components::User::ProfileView < Components::Base
                         :hide_invalid_barcodes,
                         {
                           checked: @user.hide_invalid_barcodes?,
-                          data: { action: "change->settings-form#updateSetting" },
+                          data: {action: "change->settings-form#updateSetting"},
                           class: "sr-only peer"
                         },
                         "true",
@@ -93,11 +94,11 @@ class Components::User::ProfileView < Components::Base
                     end
                   end
                 end
-                
+
                 # Status message area
                 div(
                   id: "settings-status",
-                  data: { settings_form_target: "status" },
+                  data: {settings_form_target: "status"},
                   class: "hidden text-sm mt-2"
                 )
               end
@@ -116,7 +117,7 @@ class Components::User::ProfileView < Components::Base
                     # No API token - show OAuth connection status
                     dd(class: "text-xs text-gray-500 mb-3") { "Shared OAuth connection to TheBookDB.info for product data lookups." }
 
-                    if @connection.status == 'invalid'
+                    if @connection.status == "invalid"
                       # Show invalid connection state with error message
                       div(class: "space-y-3") do
                         div(class: "flex items-start justify-between p-3 bg-red-50 border border-red-200 rounded") do
@@ -143,7 +144,7 @@ class Components::User::ProfileView < Components::Base
                             if @connection.token_expired?
                               plain "Auto-refreshing token as needed"
                             else
-                              plain "Active • Expires #{@connection.expires_at.strftime('%b %d at %I:%M %p')}"
+                              plain "Active • Expires #{@connection.expires_at.strftime("%b %d at %I:%M %p")}"
                             end
                           end
                           if @connection.verified_at.present?
@@ -210,7 +211,6 @@ class Components::User::ProfileView < Components::Base
                       end
                     end
                   end
-
                 end
               end
             end
@@ -252,11 +252,11 @@ class Components::User::ProfileView < Components::Base
 
     if hours >= 24
       days = hours / 24
-      "#{days} #{'day'.pluralize(days)}"
+      "#{days} #{"day".pluralize(days)}"
     elsif hours > 0
-      "#{hours} #{'hour'.pluralize(hours)}"
+      "#{hours} #{"hour".pluralize(hours)}"
     else
-      "#{minutes} #{'minute'.pluralize(minutes)}"
+      "#{minutes} #{"minute".pluralize(minutes)}"
     end
   end
 
