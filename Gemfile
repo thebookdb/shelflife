@@ -1,7 +1,9 @@
 source "https://rubygems.org"
 
+ruby "4.0.1"
+
 # Bundle edge Rails instead: gem "rails", github: "rails/rails", branch: "main"
-gem "rails", "~> 8.1.0"
+gem "rails", "~> 8.1.2"
 # The modern asset pipeline for Rails [https://github.com/rails/propshaft]
 gem "propshaft"
 # Web interface for managing background jobs [https://github.com/basecamp/mission_control-jobs]
