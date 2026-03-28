@@ -90,6 +90,15 @@ Join between Library and Product — "this user has this product in this library
 3. Controller creates LibraryItem in the selected library with have/want intent
 4. `set_library` session endpoint stores selection between scans
 
+### Scanner UI (confirmed working portrait + landscape, iPhone 15 Pro)
+- Single orientation-responsive layout using CSS `landscape:` variant — portrait stacks vertically, landscape splits 2/3 camera left / 1/3 controls right
+- One Stimulus controller (`barcode_scanner_controller.js`), one scanner element — no dual portrait/landscape DOM
+- Camera lens selector: slide-out drawer from left edge, uses `navigator.mediaDevices.enumerateDevices()` (not `Html5Qrcode.getCameras()` which hijacks the active stream on iOS)
+- Active camera label shown via `recentItemTargetConnected` Stimulus callback
+- Scan results prepend into the recent list via Turbo Stream with green highlight that fades after 2s
+- 2-second per-barcode cooldown prevents duplicate scans
+- Retired views (`adaptive_view.rb`, `horizontal_view.rb`) and controllers still exist in codebase but are unused
+
 ## TBDB Integration
 
 Single shared `TbdbConnection` singleton for OAuth (not per-user). `Tbdb::Client` makes authenticated requests (lazy validation). `Tbdb::OauthService` handles OAuth lifecycle.
