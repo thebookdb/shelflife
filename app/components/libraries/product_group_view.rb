@@ -52,13 +52,13 @@ class Components::Libraries::ProductGroupView < Components::Base
 
           if have_count > 0
             div(class: "bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold") do
-              plain have_count > 1 ? "#{have_count} owned" : "Owned"
+              plain (have_count > 1) ? "#{have_count} owned" : "Owned"
             end
           end
 
           if want_count > 0
             div(class: "bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold") do
-              plain want_count > 1 ? "#{want_count} wanted" : "Wanted"
+              plain (want_count > 1) ? "#{want_count} wanted" : "Wanted"
             end
           end
         end

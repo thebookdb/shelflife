@@ -8,16 +8,48 @@ class Components::Shared::NavigationView < Components::Base
       div(class: "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8") do
         div(class: "flex justify-between items-center h-16") do
           # Logo/Brand
-          div(class: "flex-shrink-0") do
-            a(href: root_path, class: "text-2xl font-bold text-primary-700 hover:text-primary-600 transition-colors") do
-              "ShelfLife"
-            end
+          a(href: root_path, class: "flex-shrink-0 text-2xl font-bold text-primary-700 hover:text-primary-600 transition-colors") do
+            "ShelfLife"
           end
 
-          # Navigation Links
-          div(class: "flex items-center space-x-4") do
+          # Desktop nav links + profile
+          div(class: "hidden sm:flex items-center space-x-4") do
             render_nav_links
             render_auth_links
+          end
+
+          # Mobile burger menu
+          if authenticated?
+            div(class: "sm:hidden") do
+              details(class: "group") do
+                summary(class: "list-none cursor-pointer p-2 rounded-md hover:bg-gray-100 transition-colors") do
+                  # Hamburger icon
+                  div(class: "w-6 flex flex-col gap-1.5") do
+                    span(class: "block h-0.5 bg-gray-700 rounded")
+                    span(class: "block h-0.5 bg-gray-700 rounded")
+                    span(class: "block h-0.5 bg-gray-700 rounded")
+                  end
+                end
+
+                # Dropdown panel
+                div(class: "absolute right-0 left-0 top-16 bg-white border-b border-gray-200 shadow-lg py-2 px-4 flex flex-col gap-1 items-end") do
+                  a(href: root_path, class: "block px-3 py-2.5 rounded-md text-sm font-medium text-primary-600 hover:bg-gray-50") { "Dashboard" }
+                  a(href: products_path, class: "block px-3 py-2.5 rounded-md text-sm font-medium text-primary-600 hover:bg-gray-50") { "Items" }
+                  a(href: libraries_path, class: "block px-3 py-2.5 rounded-md text-sm font-medium text-primary-600 hover:bg-gray-50") { "Libraries" }
+                  div(class: "border-t border-gray-100 my-1 w-full")
+                  a(href: profile_path, class: "block px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50") { "User Profile" }
+                  a(
+                    href: signout_path,
+                    data: {turbo_method: :delete},
+                    class: "block px-3 py-2.5 rounded-md text-sm text-gray-700 hover:bg-gray-50"
+                  ) { "Sign Out" }
+                end
+              end
+            end
+          else
+            div(class: "sm:hidden flex items-center") do
+              render_auth_links
+            end
           end
         end
       end
