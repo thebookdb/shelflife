@@ -81,6 +81,12 @@ class ProductEnrichmentService
   def update_product_attributes(product, tbdb_data)
     attributes = {}
 
+    # Update product type from TBDB's authoritative classification
+    if tbdb_data["ptype"].present?
+      attributes[:product_type] = tbdb_data["ptype"]
+      product.product_type = tbdb_data["ptype"] # set in-memory for format-specific logic below
+    end
+
     # Update basic product info if missing or improve existing
     attributes[:title] = tbdb_data["title"] if tbdb_data["title"].present? && (product.title.blank? || product.title.start_with?("Unknown "))
     attributes[:subtitle] = tbdb_data["subtitle"] if tbdb_data["subtitle"].present?

@@ -2,7 +2,7 @@ class ProductsController < ApplicationController
   before_action :find_or_create_product, only: [:show]
 
   def index
-    products = Product.joins(:library_items).distinct.order(:title)
+    products = Product.order(:title)
     show_onboarding = Current.user && !Current.user.get_setting("onboarding_dismissed", false)
 
     render Components::Products::IndexView.new(products: products, show_onboarding: show_onboarding)
