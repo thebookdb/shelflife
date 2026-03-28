@@ -2,6 +2,36 @@
   <%= turbo_stream.replace dom_id(@library_item.product, 'library_dropdown') do %>
     <%= render Components::Shared::LibraryDropdownView.new(product: @library_item.product) %>
   <% end %>
+
+  <%= turbo_stream.replace 'scanner-last-scan' do %>
+    <% product = @library_item.product %>
+    <div id="scanner-last-scan" class="flex items-center gap-3 bg-green-50 border border-green-200 rounded-xl px-3 py-2.5">
+      <div class="flex-shrink-0 w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center text-xl">
+        <% if product.book? || product.graphic_novel? || product.box_set? %>
+          📚
+        <% elsif product.music? %>
+          🎵
+        <% elsif product.video? %>
+          🎬
+        <% else %>
+          📦
+        <% end %>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-900 truncate"><%= product.title.presence || product.gtin %></p>
+        <% if product.author.present? %>
+          <p class="text-xs text-gray-500 truncate"><%= product.author %></p>
+        <% else %>
+          <p class="text-xs text-gray-400">Looking up details…</p>
+        <% end %>
+      </div>
+      <div class="flex-shrink-0 text-green-600">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+    </div>
+  <% end %>
 <% end %>
 
 <% 

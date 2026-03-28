@@ -10,7 +10,7 @@ class Components::Libraries::IndexView < Components::Base
       div(class: "pt-16 px-4") do
         div(class: "max-w-4xl mx-auto") do
           div(class: "mb-6") do
-            h1(class: "text-3xl font-bold text-gray-900") { "My Libraries" }
+            h1(class: "text-3xl font-bold text-gray-900") { "Libraries" }
             p(class: "text-gray-600 mt-2") { "Your collections and libraries" }
           end
 

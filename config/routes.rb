@@ -19,7 +19,10 @@ Rails.application.routes.draw do
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
   # Defines the root path route ("/")
-  root "products#index"
+  root "summary#dashboard"
+
+  # Onboarding
+  post "/onboarding/dismiss", to: "user#dismiss_onboarding", as: :dismiss_onboarding
 
   # Authentication routes
   get "/signup", to: "users#new", as: :signup
@@ -29,7 +32,7 @@ Rails.application.routes.draw do
   delete "/signout", to: "sessions#destroy", as: :signout
 
   # Product management routes
-  resources :products, only: [:index, :show, :destroy] do
+  resources :products, only: [:index, :show, :destroy, :new, :create] do
     member do
       post :refresh
     end

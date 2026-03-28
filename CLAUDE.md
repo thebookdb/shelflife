@@ -4,8 +4,10 @@
 
 ## Development Commands
 
-- `overmind start -f Procfile.dev` - Start all services (server, esbuild, tailwind, queue)
-- `bin/rails test` - Run test suite
+- `foreman start -f Procfile.dev` - Start all services (server, esbuild, tailwind, queue)
+- `bin/rails test` - Run all tests (Minitest)
+- `bin/rails test test/models/product_test.rb` - Run a single test file
+- `bin/rails test test/models/product_test.rb:42` - Run a single test by line number
 - `bin/rails db:seed` - Seed lookup tables (run after any fresh schema load)
 - `bin/standardrb` - Ruby linter (Standard style)
 - `bundle exec brakeman` - Security analysis
@@ -22,6 +24,19 @@ rm db/schema.rb && bin/rails db:drop db:create db:migrate db:seed
 Rails 8 · Phlex 2 views · Stimulus + Turbo · Tailwind 4 · esbuild · SQLite (separate DBs for cache/queue/cable via Solid adapters) · html5-qrcode
 
 **Phlex 2**: Use `plain "text"` when mixing text with HTML elements inside a block.
+
+### Phlex component layout
+All components live under `app/components/` with namespace `Components::`. Page-level components follow the `*_view.rb` naming convention and are rendered directly from controllers:
+```ruby
+render Components::Libraries::ShowView.new(library: @library, ...)
+```
+Reusable sub-components drop the `_view` suffix. Base class is `Components::Base`, which includes route helpers, form helpers, and Turbo element registration.
+
+### Auth
+Custom session-based auth (no Devise). `Authentication` concern in `ApplicationController`. Session model tracks user_agent and IP. Current user/library available via `Current.user` and `Current.library` (via `Current < ActiveSupport::CurrentAttributes`).
+
+### Real-time updates
+`ProductDataFetchJob` broadcasts product enrichment results via Turbo Streams on channel `"product_#{id}"`. Library changes broadcast on `"library_#{id}"`. Jobs use queue `:tbdb_api` with exponential backoff on rate limits/quota exhaustion.
 
 ## Product Vision
 

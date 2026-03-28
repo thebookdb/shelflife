@@ -54,6 +54,11 @@ class UserController < ApplicationController
     end
   end
 
+  def dismiss_onboarding
+    Current.user.update_setting("onboarding_dismissed", true)
+    redirect_to root_path
+  end
+
   def update_setting
     @user = Current.user
     setting_enabled = params[:user][:hide_invalid_barcodes] == "true"

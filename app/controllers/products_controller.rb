@@ -2,17 +2,26 @@ class ProductsController < ApplicationController
   before_action :find_or_create_product, only: [:show]
 
   def index
-    recent_products = if Current.user
-      Product.joins(:library_items)
-        .where(library_items: {added_by: Current.user})
-        .order("library_items.date_added DESC")
-        .distinct
-        .limit(5)
-    else
-      []
-    end
+    products = Product.joins(:library_items).distinct.order(:title)
+    show_onboarding = Current.user && !Current.user.get_setting("onboarding_dismissed", false)
 
-    render Components::Products::IndexView.new(recent_products: recent_products)
+    render Components::Products::IndexView.new(products: products, show_onboarding: show_onboarding)
+  end
+
+  def new
+    render Components::Products::NewView.new
+  end
+
+  def create
+    gtin = params[:gtin].to_s.strip
+    product_type = params[:product_type].presence || "book"
+
+    begin
+      product = Product.find_or_create_by_gtin(gtin, {product_type: product_type})
+      redirect_to "/#{product.gtin}", notice: "#{product.safe_title} added."
+    rescue ArgumentError => e
+      render Components::Products::NewView.new(gtin: gtin, error: e.message), status: :unprocessable_entity
+    end
   end
 
   def show

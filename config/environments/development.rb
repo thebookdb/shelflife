@@ -27,8 +27,7 @@ Rails.application.configure do
 
   # Change to :null_store to avoid any caching.
   config.cache_store = :solid_cache_store
-  # Already specified in cache.yml
-  # config.solid_cache.connects_to = { database: { writing: :cache } }
+  config.solid_cache.connects_to = {database: {writing: :cache}}
 
   config.active_job.queue_adapter = :solid_queue
   config.solid_queue.connects_to = {database: {writing: :queue}}
@@ -84,4 +83,6 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
 
   config.hosts << "4001.dev.booko.au"
+  config.hosts << /.*\.ngrok-free\.app/
+  config.hosts << /.*\.ngrok-free\.dev/
 end

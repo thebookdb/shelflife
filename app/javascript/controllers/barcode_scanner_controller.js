@@ -1,5 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
-import { Html5QrcodeScanner, Html5QrcodeSupportedFormats } from "html5-qrcode"
+import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode"
 
 export default class extends Controller {
   static targets = ["portraitScanner", "landscapeScanner", "result", "portraitPlaceholder", "landscapePlaceholder", "startButton", "stopButton", "librarySelect", "scanResult", "libraryStatus", "orientationDisplay", "portraitLayout", "landscapeLayout", "portraitScannerArea", "landscapeScannerArea"]
@@ -97,64 +97,32 @@ export default class extends Controller {
   
   getScannerConfig() {
     const isLandscape = this.currentOrientationValue === "landscape"
-    
-    if (isLandscape) {
-      // Horizontal/Landscape configuration
-      return {
-        fps: 10,
-        qrbox: { width: 400, height: 200 },
-        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13],
-        showTorchButtonIfSupported: true,
-        showZoomSliderIfSupported: true,
-        defaultZoomValueIfSupported: 2,
-        useBarCodeDetectorIfSupported: true,
-        verbose: true,
-        aspectRatio: 2.0,
-        disableFlip: false,
-        rememberLastUsedCamera: true
-      }
-    } else {
-      // Vertical/Portrait configuration
-      return {
-        fps: 10,
-        qrbox: { width: 250, height: 150 },
-        formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13],
-        showTorchButtonIfSupported: true,
-        showZoomSliderIfSupported: true,
-        defaultZoomValueIfSupported: 2,
-        useBarCodeDetectorIfSupported: true,
-        verbose: true,
-        aspectRatio: 1.777778,
-        disableFlip: false
-      }
+    return {
+      fps: 10,
+      qrbox: isLandscape ? { width: 400, height: 200 } : { width: 250, height: 150 },
+      formatsToSupport: [Html5QrcodeSupportedFormats.EAN_13],
+      aspectRatio: isLandscape ? 2.0 : 1.777778,
+      disableFlip: false
     }
   }
   
   async restartScannerForOrientation() {
     console.log(`Restarting scanner for ${this.currentOrientationValue} mode`)
-    
-    // Stop current scanner
+
     if (this.scanner) {
       try {
-        await this.scanner.clear()
+        await this.scanner.stop()
+        this.scanner.clear()
         this.scanner = null
       } catch (error) {
-        console.error("Error clearing scanner:", error)
+        console.error("Error stopping scanner:", error)
       }
     }
-    
-    // Hide both scanner elements
-    if (this.hasPortraitScannerTarget) {
-      this.portraitScannerTarget.classList.add("hidden")
-    }
-    if (this.hasLandscapeScannerTarget) {
-      this.landscapeScannerTarget.classList.add("hidden")
-    }
-    
-    // Brief pause to ensure cleanup
-    setTimeout(() => {
-      this.initializeScanner()
-    }, 500)
+
+    if (this.hasPortraitScannerTarget) this.portraitScannerTarget.classList.add("hidden")
+    if (this.hasLandscapeScannerTarget) this.landscapeScannerTarget.classList.add("hidden")
+
+    setTimeout(() => { this.initializeScanner() }, 500)
   }
 
   startScanning() {
@@ -177,10 +145,6 @@ export default class extends Controller {
       this.portraitPlaceholderTarget.classList.add("hidden")
     }
     
-    // Update result display
-    if (this.hasResultTarget) {
-      this.resultTarget.textContent = "Scanning... Point camera at barcode"
-    }
     if (this.hasScanResultTarget) {
       this.scanResultTarget.classList.remove("hidden")
     }
@@ -192,7 +156,7 @@ export default class extends Controller {
     this.initializeScanner()
   }
   
-  initializeScanner() {
+  async initializeScanner() {
     // Get the correct scanner element based on current orientation
     const scannerTarget = this.getCurrentScannerTarget()
     if (!scannerTarget) {
@@ -207,22 +171,19 @@ export default class extends Controller {
     
     const config = this.getScannerConfig()
     console.log(`Using ${this.currentOrientationValue} configuration:`, config)
-    
-    this.scanner = new Html5QrcodeScanner(
-      scannerTarget.id,
-      config,
-      false
-    )
+
+    this.scanner = new Html5Qrcode(scannerTarget.id)
 
     try {
-      console.log("Rendering adaptive scanner...")
-      this.scanner.render(
+      await this.scanner.start(
+        { facingMode: "environment" },
+        config,
         this.onScanSuccess.bind(this),
         this.onScanFailure.bind(this)
       )
-      console.log("Adaptive scanner rendered successfully")
+      console.log("Scanner started successfully")
     } catch (error) {
-      console.error("Error initializing adaptive scanner:", error)
+      console.error("Error starting scanner:", error)
       this.showError("Camera access failed. Please check permissions.")
     }
   }
@@ -279,19 +240,18 @@ export default class extends Controller {
       this.landscapeScannerTarget.classList.add("hidden")
     }
     
-    // Clear result displays
-    if (this.hasResultTarget) {
-      this.resultTarget.textContent = ""
-    }
     if (this.hasScanResultTarget) {
       this.scanResultTarget.classList.add("hidden")
     }
     
     if (this.scanner) {
-      this.scanner.clear().catch(error => {
-        console.error("Failed to clear scanner:", error)
+      this.scanner.stop().then(() => {
+        this.scanner.clear()
+        this.scanner = null
+      }).catch(error => {
+        console.error("Failed to stop scanner:", error)
+        this.scanner = null
       })
-      this.scanner = null
     }
   }
 
@@ -300,14 +260,6 @@ export default class extends Controller {
     
     // Validate GTIN-13 format (13 digits)
     if (decodedText && /^\d{13}$/.test(decodedText)) {
-      // Update result display
-      const resultText = `✅ Scanned: ${decodedText}`
-      if (this.hasResultTarget) {
-        this.resultTarget.textContent = resultText
-        this.resultTarget.classList.add("text-green-700")
-        this.resultTarget.classList.remove("text-red-600")
-      }
-      
       // Haptic feedback on mobile if supported
       if (navigator.vibrate) {
         navigator.vibrate(200)
@@ -350,15 +302,8 @@ export default class extends Controller {
         }
 
         // Continue scanning after showing result briefly (for continuous scanning contexts)
-        setTimeout(() => {
-          if (this.scanningValue) {
-            const resultText = "Scanning... Point camera at barcode"
-            if (this.hasResultTarget) {
-              this.resultTarget.textContent = resultText
-              this.resultTarget.classList.remove("text-green-700", "text-red-600")
-            }
-          }
-        }, 2000)
+        // Brief pause before resuming scan
+        setTimeout(() => {}, 2000)
       } else {
         this.showError('Failed to process scan')
       }
@@ -368,22 +313,8 @@ export default class extends Controller {
     }
   }
   
-  continueScan() {
-    // Reset result display and continue scanning
-    this.resultTarget.textContent = "Scanning... Point camera at barcode"
-    this.resultTarget.classList.remove("text-red-600", "text-green-700")
-    
-    // Clear the product display back to default
-    const productDisplay = document.getElementById('product-display')
-    if (productDisplay) {
-      productDisplay.innerHTML = this.getDefaultDisplayContent()
-    }
-  }
-  
   showError(message) {
-    this.resultTarget.textContent = `❌ ${message}`
-    this.resultTarget.classList.add("text-red-600")
-    this.resultTarget.classList.remove("text-green-700")
+    console.error("Scanner error:", message)
   }
   
   getProductIdFromDisplay() {
@@ -422,41 +353,37 @@ export default class extends Controller {
   // Navigation hiding/showing for mobile
   hideNavigation() {
     const nav = document.querySelector('nav')
+    const actionBar = document.getElementById('action-bar')
     if (nav) {
       this.originalNavDisplay = this.originalNavDisplay || nav.style.display
       nav.style.display = 'none'
-      
-      // Also remove the main margin-top since nav is hidden
+      if (actionBar) actionBar.style.display = 'none'
+
       const main = document.querySelector('main')
-      if (main) {
-        main.style.marginTop = '0'
-      }
-      
-      // Remove top-16 class from scanner container and make it fill full screen
+      if (main) main.style.marginTop = '0'
+
       const scannerContainer = this.element
       if (scannerContainer) {
-        scannerContainer.classList.remove('top-16')
+        scannerContainer.classList.remove('top-28')
         scannerContainer.classList.add('top-0')
       }
     }
   }
-  
+
   showNavigation() {
     const nav = document.querySelector('nav')
+    const actionBar = document.getElementById('action-bar')
     if (nav) {
       nav.style.display = this.originalNavDisplay || ''
-      
-      // Restore main margin-top
+      if (actionBar) actionBar.style.display = ''
+
       const main = document.querySelector('main')
-      if (main) {
-        main.style.marginTop = ''
-      }
-      
-      // Restore top-16 class to scanner container
+      if (main) main.style.marginTop = ''
+
       const scannerContainer = this.element
       if (scannerContainer) {
         scannerContainer.classList.remove('top-0')
-        scannerContainer.classList.add('top-16')
+        scannerContainer.classList.add('top-28')
       }
     }
   }
