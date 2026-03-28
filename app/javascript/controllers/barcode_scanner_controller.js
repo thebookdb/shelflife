@@ -2,7 +2,7 @@ import { Controller } from "@hotwired/stimulus"
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode"
 
 export default class extends Controller {
-  static targets = ["scanner", "placeholder", "startButton", "stopButton", "librarySelect", "scanOverlay", "libraryStatus", "cameraTab", "cameraDrawer", "cameraList", "cameraLabel"]
+  static targets = ["scanner", "placeholder", "startButton", "stopButton", "librarySelect", "scanOverlay", "libraryStatus", "cameraTab", "cameraDrawer", "cameraList", "cameraLabel", "recentItem"]
   static values = {
     scanning: { type: Boolean, default: false },
     currentOrientation: { type: String, default: "portrait" }
@@ -14,8 +14,24 @@ export default class extends Controller {
     this.drawerOpen = false
     this.boundOnOrientationChange = this.onOrientationChange.bind(this)
     this.boundOnLibraryChange = this.onLibraryChange.bind(this)
+    this.highlightTimer = null
     this.loadLibraryPreference()
     this.setupOrientationDetection()
+  }
+
+  recentItemTargetConnected(element) {
+    // Strip all highlight from previous items
+    this.recentItemTargets.forEach(el => {
+      if (el !== element) {
+        el.classList.remove('ring-2', 'ring-green-400', 'bg-green-100')
+      }
+    })
+
+    // Fade the neon ring after 2 seconds, keep the pale green background
+    clearTimeout(this.highlightTimer)
+    this.highlightTimer = setTimeout(() => {
+      element.classList.remove('ring-2', 'ring-green-400')
+    }, 2000)
   }
 
   loadLibraryPreference() {
@@ -269,6 +285,12 @@ export default class extends Controller {
 
   onScanSuccess(decodedText, decodedResult) {
     if (decodedText && /^\d{13}$/.test(decodedText)) {
+      // Cooldown — ignore repeat scans for 2 seconds
+      const now = Date.now()
+      if (this.lastScanText === decodedText && now - this.lastScanTime < 2000) return
+      this.lastScanText = decodedText
+      this.lastScanTime = now
+
       if (navigator.vibrate) {
         navigator.vibrate(200)
       }

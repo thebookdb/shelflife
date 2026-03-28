@@ -111,7 +111,7 @@ class Components::Scanners::IndexView < Components::Base
       end
 
       # Control panel — bottom in portrait, right 1/3 in landscape
-      div(class: "bg-white px-4 pt-4 pb-6 flex flex-col gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.15)] landscape:flex-1 landscape:border-l landscape:border-gray-200 landscape:shadow-none landscape:overflow-y-auto") do
+      div(class: "bg-white px-4 pt-3 pb-4 flex flex-col gap-2 shadow-[0_-4px_16px_rgba(0,0,0,0.15)] landscape:flex-1 landscape:border-l landscape:border-gray-200 landscape:shadow-none landscape:overflow-y-auto") do
         button(
           type: "button",
           data_action: "click->barcode-scanner#startScanning",
@@ -122,10 +122,18 @@ class Components::Scanners::IndexView < Components::Base
           span { "Start Scanning" }
         end
 
-        # Last scan result — populated via turbo stream on successful scan
-        div(id: "scanner-last-scan")
+        div do
+          p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5") { "Recent" }
+          div(id: "scanner-recent-items", class: "space-y-1 max-h-32 overflow-y-auto p-0.5") do
+            if @recent_items.any?
+              @recent_items.first(5).each do |item|
+                render_recent_item(item)
+              end
+            end
+          end
+        end
 
-        div(data_barcode_scanner_target: "libraryStatus") do
+        div(data_barcode_scanner_target: "libraryStatus", class: "mt-auto pt-2 border-t border-gray-100") do
           label(class: "text-xs font-medium text-gray-400 uppercase tracking-wide block mb-1") { "Scanning into" }
           select(
             data_barcode_scanner_target: "librarySelect",
@@ -136,22 +144,20 @@ class Components::Scanners::IndexView < Components::Base
             end
           end
         end
+      end
+    end
+  end
 
-        if @recent_items.any?
-          div do
-            p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide mb-1.5") { "Recent" }
-            div(class: "space-y-1") do
-              @recent_items.first(3).each do |item|
-                div(class: "flex items-center gap-2 py-1") do
-                  span(class: "text-xs text-gray-400 flex-shrink-0") { item.date_added.strftime("%H:%M") }
-                  span(class: "text-sm text-gray-700 truncate") do
-                    item.product&.title || item.product&.gtin || "Unknown"
-                  end
-                end
-              end
-            end
-          end
-        end
+  private
+
+  def render_recent_item(item, highlight: false)
+    classes = "flex items-center gap-2 py-1.5 px-2 rounded-lg transition-all duration-700"
+    classes += " bg-green-100 ring-2 ring-green-400 scanner-highlight" if highlight
+
+    div(class: classes) do
+      span(class: "text-xs text-gray-400 flex-shrink-0") { item.date_added.strftime("%H:%M") }
+      span(class: "text-sm text-gray-700 truncate flex-1") do
+        item.product&.title || item.product&.gtin || "Unknown"
       end
     end
   end
