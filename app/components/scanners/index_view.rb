@@ -61,15 +61,52 @@ class Components::Scanners::IndexView < Components::Base
           p(class: "text-white/60 text-sm") { "Point camera at a barcode" }
         end
 
-        # Stop button overlay (hidden until scanning)
-        div(class: "absolute bottom-6 left-0 right-0 z-20 flex justify-center hidden",
+        # Scanning overlay (hidden until scanning)
+        div(class: "absolute inset-0 z-20 pointer-events-none hidden",
           data_barcode_scanner_target: "scanOverlay") do
-          button(
-            type: "button",
-            data_action: "click->barcode-scanner#stopScanning",
-            data_barcode_scanner_target: "stopButton",
-            class: "bg-red-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg text-base"
-          ) { "Stop" }
+
+          # Active camera label — top center
+          div(
+            data_barcode_scanner_target: "cameraLabel",
+            class: "absolute top-2 left-1/2 -translate-x-1/2 bg-black/40 backdrop-blur-sm rounded px-2 py-0.5"
+          ) do
+            span(class: "text-white text-[11px] leading-tight whitespace-nowrap")
+          end
+
+          # Stop button — bottom center
+          div(class: "absolute bottom-6 left-0 right-0 flex justify-center pointer-events-auto") do
+            button(
+              type: "button",
+              data_action: "click->barcode-scanner#stopScanning",
+              data_barcode_scanner_target: "stopButton",
+              class: "bg-red-600 text-white px-8 py-3 rounded-xl font-semibold shadow-lg text-base"
+            ) { "Stop" }
+          end
+
+          # Camera drawer tab — left edge, vertically centered
+          div(
+            data_barcode_scanner_target: "cameraTab",
+            data_action: "click->barcode-scanner#toggleCameraDrawer",
+            class: "absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur rounded-r-lg px-1.5 py-3 shadow-lg cursor-pointer pointer-events-auto transition-opacity",
+          ) do
+            span(class: "text-gray-700 text-sm") { "›" }
+          end
+
+          # Camera drawer panel — slides from left
+          div(
+            data_barcode_scanner_target: "cameraDrawer",
+            class: "absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full bg-white/90 backdrop-blur rounded-r-xl shadow-xl p-3 pointer-events-auto transition-transform duration-200 ease-out w-56"
+          ) do
+            div(class: "flex items-center justify-between mb-2") do
+              span(class: "text-xs font-semibold text-gray-600 uppercase tracking-wide") { "Camera" }
+              button(
+                type: "button",
+                data_action: "click->barcode-scanner#toggleCameraDrawer",
+                class: "text-gray-400 hover:text-gray-600 text-sm leading-none"
+              ) { "✕" }
+            end
+            div(data_barcode_scanner_target: "cameraList", class: "space-y-1")
+          end
         end
       end
 

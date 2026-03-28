@@ -2,13 +2,16 @@ import { Controller } from "@hotwired/stimulus"
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode"
 
 export default class extends Controller {
-  static targets = ["scanner", "placeholder", "startButton", "stopButton", "librarySelect", "scanOverlay", "libraryStatus"]
+  static targets = ["scanner", "placeholder", "startButton", "stopButton", "librarySelect", "scanOverlay", "libraryStatus", "cameraTab", "cameraDrawer", "cameraList", "cameraLabel"]
   static values = {
     scanning: { type: Boolean, default: false },
     currentOrientation: { type: String, default: "portrait" }
   }
 
   connect() {
+    this.cameras = []
+    this.activeCameraId = null
+    this.drawerOpen = false
     this.loadLibraryPreference()
     this.setupOrientationDetection()
   }
@@ -91,7 +94,7 @@ export default class extends Controller {
     setTimeout(() => { this.initializeScanner() }, 500)
   }
 
-  startScanning() {
+  async startScanning() {
     if (this.scanningValue) return
 
     this.scanningValue = true
@@ -101,7 +104,13 @@ export default class extends Controller {
     if (this.hasPlaceholderTarget) this.placeholderTarget.classList.add("hidden")
     if (this.hasScanOverlayTarget) this.scanOverlayTarget.classList.remove("hidden")
 
-    this.initializeScanner()
+    await this.initializeScanner()
+
+    // Enumerate cameras after scanner is running — permission is already granted
+    // so enumerateDevices() returns labels without triggering a new getUserMedia
+    if (this.cameras.length === 0) {
+      this.enumerateCameras()
+    }
   }
 
   async initializeScanner() {
@@ -110,9 +119,14 @@ export default class extends Controller {
     const config = this.getScannerConfig()
     this.scanner = new Html5Qrcode(this.scannerTarget.id)
 
+    // Use saved camera if available, otherwise default to environment-facing
+    const cameraConfig = this.activeCameraId
+      ? this.activeCameraId
+      : { facingMode: "environment" }
+
     try {
       await this.scanner.start(
-        { facingMode: "environment" },
+        cameraConfig,
         config,
         this.onScanSuccess.bind(this),
         this.onScanFailure.bind(this)
@@ -122,11 +136,125 @@ export default class extends Controller {
     }
   }
 
+  async enumerateCameras() {
+    try {
+      // Use browser API directly — avoids Html5Qrcode.getCameras() which
+      // calls getUserMedia internally and can hijack the active stream on iOS
+      const devices = await navigator.mediaDevices.enumerateDevices()
+      this.cameras = devices
+        .filter(d => d.kind === 'videoinput')
+        .map(d => ({ id: d.deviceId, label: d.label }))
+
+      this.updateCameraLabel()
+      if (this.cameras.length > 1) {
+        this.renderCameraList()
+      } else {
+        if (this.hasCameraTabTarget) this.cameraTabTarget.style.display = 'none'
+      }
+    } catch (error) {
+      console.error("Error enumerating cameras:", error)
+    }
+  }
+
+  updateCameraLabel() {
+    if (!this.hasCameraLabelTarget) return
+
+    let label = 'Camera'
+
+    if (this.activeCameraId) {
+      const active = this.cameras.find(c => c.id === this.activeCameraId)
+      if (active) label = active.label || label
+    } else {
+      // No explicit camera ID — detect from the active video track
+      const video = this.scannerTarget.querySelector('video')
+      if (video?.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0]
+        if (track) {
+          const settings = track.getSettings()
+          const match = this.cameras.find(c => c.id === settings.deviceId)
+          if (match) label = match.label || label
+        }
+      }
+    }
+
+    this.cameraLabelTarget.querySelector('span').textContent = this.shortenCameraLabel(label)
+  }
+
+  renderCameraList() {
+    if (!this.hasCameraListTarget) return
+
+    this.cameraListTarget.innerHTML = ''
+    this.cameras.forEach(camera => {
+      const btn = document.createElement('button')
+      btn.type = 'button'
+      btn.className = `w-full text-left px-2.5 py-2 rounded-lg text-sm transition-colors ${
+        camera.id === this.activeCameraId
+          ? 'bg-green-100 text-green-800 font-medium'
+          : 'text-gray-700 hover:bg-gray-100'
+      }`
+      btn.textContent = this.shortenCameraLabel(camera.label || `Camera ${this.cameras.indexOf(camera) + 1}`)
+      btn.addEventListener('click', () => this.switchCamera(camera.id))
+      this.cameraListTarget.appendChild(btn)
+    })
+  }
+
+  shortenCameraLabel(label) {
+    // Strip common verbose prefixes from camera labels
+    return label
+      .replace(/\s*\(.*?\)\s*$/, '')
+      .replace(/^camera2\s+\d+,\s*/i, '')
+      .trim() || label
+  }
+
+  async switchCamera(cameraId) {
+    if (cameraId === this.activeCameraId) {
+      this.toggleCameraDrawer()
+      return
+    }
+
+    this.activeCameraId = cameraId
+    this.updateCameraLabel()
+    this.renderCameraList()
+    this.toggleCameraDrawer()
+
+    // Restart scanner with selected camera
+    if (this.scanner) {
+      try {
+        await this.scanner.stop()
+        this.scanner.clear()
+        this.scanner = null
+      } catch (error) {
+        console.error("Error stopping scanner:", error)
+      }
+    }
+
+    this.scannerTarget.classList.add("hidden")
+    setTimeout(() => { this.initializeScanner() }, 300)
+  }
+
+  toggleCameraDrawer() {
+    if (!this.hasCameraDrawerTarget) return
+
+    this.drawerOpen = !this.drawerOpen
+    if (this.drawerOpen) {
+      this.cameraDrawerTarget.classList.remove('-translate-x-full')
+      this.cameraDrawerTarget.classList.add('translate-x-0')
+      if (this.hasCameraTabTarget) this.cameraTabTarget.style.opacity = '0'
+    } else {
+      this.cameraDrawerTarget.classList.remove('translate-x-0')
+      this.cameraDrawerTarget.classList.add('-translate-x-full')
+      if (this.hasCameraTabTarget) this.cameraTabTarget.style.opacity = ''
+    }
+  }
+
   stopScanning() {
     if (!this.scanningValue) return
 
     this.scanningValue = false
     this.showNavigation()
+
+    // Close camera drawer if open
+    if (this.drawerOpen) this.toggleCameraDrawer()
 
     this.startButtonTarget.classList.remove("hidden")
     if (this.hasPlaceholderTarget) this.placeholderTarget.classList.remove("hidden")
