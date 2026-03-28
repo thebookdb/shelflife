@@ -1,0 +1,17 @@
+<% unless @library_item.nil? %>
+  <%= turbo_stream.replace dom_id(@library_item.product, 'library_dropdown') do %>
+    <%= render Components::Shared::LibraryDropdownView.new(product: @library_item.product) %>
+  <% end %>
+<% end %>
+
+<% 
+  @title = "Library Updated"
+  @type = 'notice'  
+  if @library && @library_item&.product.present?
+    @message = "Added #{@library_item.product.safe_title} to #{@library.name}"
+  end
+%>
+
+<%= turbo_stream.append 'notifications' do %>
+  <%= render(partial: 'application/notification', locals: { type: @type, fl: {title: sanitize(@title), message: sanitize(@message)}}) if defined?(notifications) %>
+<% end %>

@@ -1,0 +1,35 @@
+services:
+  web:
+    image: git.booko.info/shelflife/shelflife:latest
+    environment:
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - BOOKO_API_TOKEN=${BOOKO_API_TOKEN}
+      - TBDB_API_TOKEN=${TBDB_API_TOKEN}
+    ports:
+      - "100.86.148.37:3004:3000"
+    volumes:
+      - ./storage:/rails/storage
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+  jobs:
+    image: git.booko.info/shelflife/shelflife:latest
+    environment:
+      - RAILS_ENV=production
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - BOOKO_API_TOKEN=${BOOKO_API_TOKEN}
+      - TBDB_API_TOKEN=${TBDB_API_TOKEN}
+      - JOB_CONCURRENCY=1
+    volumes:
+      - ./storage:/rails/storage
+    command: bundle exec bin/jobs
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
