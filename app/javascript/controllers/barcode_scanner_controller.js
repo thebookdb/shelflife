@@ -12,13 +12,15 @@ export default class extends Controller {
     this.cameras = []
     this.activeCameraId = null
     this.drawerOpen = false
+    this.boundOnOrientationChange = this.onOrientationChange.bind(this)
+    this.boundOnLibraryChange = this.onLibraryChange.bind(this)
     this.loadLibraryPreference()
     this.setupOrientationDetection()
   }
 
   loadLibraryPreference() {
     if (this.hasLibrarySelectTarget) {
-      this.librarySelectTarget.addEventListener('change', this.onLibraryChange.bind(this))
+      this.librarySelectTarget.addEventListener('change', this.boundOnLibraryChange)
     }
   }
 
@@ -42,9 +44,9 @@ export default class extends Controller {
     this.detectOrientation()
 
     if (screen.orientation) {
-      screen.orientation.addEventListener('change', this.onOrientationChange.bind(this))
+      screen.orientation.addEventListener('change', this.boundOnOrientationChange)
     }
-    window.addEventListener('resize', this.onOrientationChange.bind(this))
+    window.addEventListener('resize', this.boundOnOrientationChange)
   }
 
   detectOrientation() {
@@ -79,17 +81,19 @@ export default class extends Controller {
     }
   }
 
-  async restartScannerForOrientation() {
-    if (this.scanner) {
-      try {
-        await this.scanner.stop()
-        this.scanner.clear()
-        this.scanner = null
-      } catch (error) {
-        console.error("Error stopping scanner:", error)
-      }
+  async stopScannerInstance() {
+    if (!this.scanner) return
+    try {
+      await this.scanner.stop()
+      this.scanner.clear()
+    } catch (error) {
+      console.error("Error stopping scanner:", error)
     }
+    this.scanner = null
+  }
 
+  async restartScannerForOrientation() {
+    await this.stopScannerInstance()
     this.scannerTarget.classList.add("hidden")
     setTimeout(() => { this.initializeScanner() }, 500)
   }
@@ -184,18 +188,27 @@ export default class extends Controller {
     if (!this.hasCameraListTarget) return
 
     this.cameraListTarget.innerHTML = ''
-    this.cameras.forEach(camera => {
+    this.cameras.forEach((camera, index) => {
       const btn = document.createElement('button')
       btn.type = 'button'
+      btn.dataset.cameraId = camera.id
       btn.className = `w-full text-left px-2.5 py-2 rounded-lg text-sm transition-colors ${
         camera.id === this.activeCameraId
           ? 'bg-green-100 text-green-800 font-medium'
           : 'text-gray-700 hover:bg-gray-100'
       }`
-      btn.textContent = this.shortenCameraLabel(camera.label || `Camera ${this.cameras.indexOf(camera) + 1}`)
-      btn.addEventListener('click', () => this.switchCamera(camera.id))
+      btn.textContent = this.shortenCameraLabel(camera.label || `Camera ${index + 1}`)
       this.cameraListTarget.appendChild(btn)
     })
+
+    // Single delegated listener on the container
+    if (!this.cameraListTarget.dataset.delegated) {
+      this.cameraListTarget.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-camera-id]')
+        if (btn) this.switchCamera(btn.dataset.cameraId)
+      })
+      this.cameraListTarget.dataset.delegated = 'true'
+    }
   }
 
   shortenCameraLabel(label) {
@@ -217,17 +230,7 @@ export default class extends Controller {
     this.renderCameraList()
     this.toggleCameraDrawer()
 
-    // Restart scanner with selected camera
-    if (this.scanner) {
-      try {
-        await this.scanner.stop()
-        this.scanner.clear()
-        this.scanner = null
-      } catch (error) {
-        console.error("Error stopping scanner:", error)
-      }
-    }
-
+    await this.stopScannerInstance()
     this.scannerTarget.classList.add("hidden")
     setTimeout(() => { this.initializeScanner() }, 300)
   }
@@ -261,16 +264,7 @@ export default class extends Controller {
     if (this.hasScanOverlayTarget) this.scanOverlayTarget.classList.add("hidden")
 
     this.scannerTarget.classList.add("hidden")
-
-    if (this.scanner) {
-      this.scanner.stop().then(() => {
-        this.scanner.clear()
-        this.scanner = null
-      }).catch(error => {
-        console.error("Failed to stop scanner:", error)
-        this.scanner = null
-      })
-    }
+    this.stopScannerInstance()
   }
 
   onScanSuccess(decodedText, decodedResult) {
@@ -350,11 +344,16 @@ export default class extends Controller {
 
   disconnect() {
     this.stopScanning()
+    this.cameras = []
+    this.activeCameraId = null
 
-    if (screen.orientation) {
-      screen.orientation.removeEventListener('change', this.onOrientationChange.bind(this))
+    if (this.hasLibrarySelectTarget) {
+      this.librarySelectTarget.removeEventListener('change', this.boundOnLibraryChange)
     }
-    window.removeEventListener('resize', this.onOrientationChange.bind(this))
+    if (screen.orientation) {
+      screen.orientation.removeEventListener('change', this.boundOnOrientationChange)
+    }
+    window.removeEventListener('resize', this.boundOnOrientationChange)
     clearTimeout(this.orientationTimeout)
   }
 }
