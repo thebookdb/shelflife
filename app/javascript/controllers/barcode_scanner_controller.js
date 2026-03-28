@@ -133,7 +133,9 @@ export default class extends Controller {
     this.scannerTarget.classList.remove("hidden")
 
     const config = this.getScannerConfig()
-    this.scanner = new Html5Qrcode(this.scannerTarget.id)
+    this.scanner = new Html5Qrcode(this.scannerTarget.id, {
+      useBarCodeDetectorIfSupported: true
+    })
 
     // Use saved camera if available, otherwise default to environment-facing
     const cameraConfig = this.activeCameraId
