@@ -16,18 +16,19 @@ class Components::LibraryItems::EditView < Components::Base
           # Header with breadcrumb
           div(class: "mb-6") do
             nav(class: "text-sm text-gray-600 mb-4") do
-              a(href: libraries_path, class: "hover:text-blue-600") { "Libraries" }
+              a(href: libraries_path, class: "hover:text-orange-600") { "Libraries" }
               plain " / "
-              a(href: library_path(@library), class: "hover:text-blue-600") { @library.name }
+              a(href: library_path(@library), class: "hover:text-orange-600") { @library.name }
               plain " / "
-              span(class: "text-gray-900") { "Edit Item" }
+              a(href: library_item_path(@library_item), class: "hover:text-orange-600") { @product.safe_title }
+              plain " / "
+              span(class: "text-gray-900 font-medium") { "Edit" }
             end
 
-            h1(class: "text-3xl font-bold text-gray-900") { "Edit Library Item" }
-            p(class: "text-gray-600 mt-2") { @product.safe_title }
+            h1(class: "text-3xl font-bold text-gray-900") { "Edit Your Copy" }
           end
 
-          div(class: "bg-white rounded-lg shadow-md p-6") do
+          div(class: "bg-orange-50 rounded-lg shadow-md p-6 border-l-4 #{intent_border_class(@library_item)}") do
             # Display errors if any
             if @library_item.errors.any?
               div(class: "mb-6 bg-red-50 border border-red-200 rounded-lg p-4") do
@@ -47,7 +48,7 @@ class Components::LibraryItems::EditView < Components::Base
               div(class: "mb-8") do
                 # Basic Information Section
                 div(class: "mb-8") do
-                  h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Basic Information" }
+                  h2(class: "text-lg font-semibold text-orange-700 mb-4 pb-2 border-b border-orange-200") { "Basic Information" }
 
                   div(class: "grid grid-cols-1 md:grid-cols-2 gap-4") do
                     div do
@@ -55,7 +56,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_intent",
                         name: "library_item[intent]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       ) do
                         option(value: "have", selected: @library_item.have?) { "Have" }
                         option(value: "want", selected: @library_item.want?) { "Want" }
@@ -68,7 +69,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_item_status_id",
                         name: "library_item[item_status_id]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
                         data: {
                           controller: "slim-select",
                           slim_select_placeholder_value: "Select status..."
@@ -90,7 +91,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_ownership_status_id",
                         name: "library_item[ownership_status_id]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
                         data: {
                           controller: "slim-select",
                           slim_select_placeholder_value: "Select ownership..."
@@ -112,7 +113,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_location",
                         name: "library_item[location]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
                         data: {
                           controller: "slim-select",
                           slim_select_allow_create_value: true,
@@ -139,7 +140,7 @@ class Components::LibraryItems::EditView < Components::Base
                         name: "library_item[copy_identifier]",
                         value: @library_item.copy_identifier,
                         placeholder: "e.g., Copy 1, First Edition",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
                   end
@@ -147,7 +148,7 @@ class Components::LibraryItems::EditView < Components::Base
 
                 # Condition Section
                 div(class: "mb-8") do
-                  h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Condition" }
+                  h2(class: "text-lg font-semibold text-orange-700 mb-4 pb-2 border-b border-orange-200") { "Condition" }
 
                   div(class: "grid grid-cols-1 md:grid-cols-2 gap-4 mb-4") do
                     # Condition
@@ -156,7 +157,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_condition_id",
                         name: "library_item[condition_id]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
                         data: {
                           controller: "slim-select",
                           slim_select_placeholder_value: "Select condition..."
@@ -181,14 +182,14 @@ class Components::LibraryItems::EditView < Components::Base
                       name: "library_item[condition_notes]",
                       rows: "3",
                       placeholder: "Describe any damage, wear, or condition details...",
-                      class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     ) { @library_item.condition_notes }
                   end
                 end
 
                 # Acquisition Section
                 div(class: "mb-8") do
-                  h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Acquisition Details" }
+                  h2(class: "text-lg font-semibold text-orange-700 mb-4 pb-2 border-b border-orange-200") { "Acquisition Details" }
 
                   div(class: "grid grid-cols-1 md:grid-cols-2 gap-4") do
                     # Acquisition Date
@@ -199,7 +200,7 @@ class Components::LibraryItems::EditView < Components::Base
                         id: "library_item_acquisition_date",
                         name: "library_item[acquisition_date]",
                         value: @library_item.acquisition_date&.strftime("%Y-%m-%d"),
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
 
@@ -209,7 +210,7 @@ class Components::LibraryItems::EditView < Components::Base
                       select(
                         id: "library_item_acquisition_source_id",
                         name: "library_item[acquisition_source_id]",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
                         data: {
                           controller: "slim-select",
                           slim_select_placeholder_value: "Select source..."
@@ -235,7 +236,7 @@ class Components::LibraryItems::EditView < Components::Base
                         name: "library_item[acquisition_price]",
                         value: @library_item.acquisition_price,
                         placeholder: "0.00",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
 
@@ -249,7 +250,7 @@ class Components::LibraryItems::EditView < Components::Base
                         name: "library_item[original_retail_price]",
                         value: @library_item.original_retail_price,
                         placeholder: "0.00",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
 
@@ -263,7 +264,7 @@ class Components::LibraryItems::EditView < Components::Base
                         name: "library_item[replacement_cost]",
                         value: @library_item.replacement_cost,
                         placeholder: "0.00",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
 
@@ -277,7 +278,7 @@ class Components::LibraryItems::EditView < Components::Base
                         name: "library_item[current_market_value]",
                         value: @library_item.current_market_value,
                         placeholder: "0.00",
-                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                       )
                     end
                   end
@@ -286,7 +287,7 @@ class Components::LibraryItems::EditView < Components::Base
 
               # Notes Section
               div(class: "mb-8") do
-                h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Notes" }
+                h2(class: "text-lg font-semibold text-orange-700 mb-4 pb-2 border-b border-orange-200") { "Notes" }
 
                 # Public Notes
                 div(class: "mb-4") do
@@ -296,7 +297,7 @@ class Components::LibraryItems::EditView < Components::Base
                     name: "library_item[notes]",
                     rows: "3",
                     placeholder: "General notes about this copy...",
-                    class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   ) { @library_item.notes }
                 end
 
@@ -308,14 +309,14 @@ class Components::LibraryItems::EditView < Components::Base
                     name: "library_item[private_notes]",
                     rows: "3",
                     placeholder: "Private notes (not shared)...",
-                    class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                   ) { @library_item.private_notes }
                 end
               end
 
               # Tags Section
               div(class: "mb-8") do
-                h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Tags & Preferences" }
+                h2(class: "text-lg font-semibold text-orange-700 mb-4 pb-2 border-b border-orange-200") { "Tags & Preferences" }
 
                 div(class: "grid grid-cols-1 gap-4") do
                   # Tags
@@ -327,7 +328,7 @@ class Components::LibraryItems::EditView < Components::Base
                       name: "library_item[tags]",
                       value: @library_item.tags,
                       placeholder: "Comma-separated tags (e.g., favorite, signed, first-edition)",
-                      class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     )
                   end
 
@@ -339,7 +340,7 @@ class Components::LibraryItems::EditView < Components::Base
                       name: "library_item[is_favorite]",
                       value: "1",
                       checked: @library_item.is_favorite,
-                      class: "h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                      class: "h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
                     )
                     label(for: "library_item_is_favorite", class: "ml-2 text-sm font-medium text-gray-700") { "Mark as favorite ⭐" }
                   end
@@ -347,7 +348,7 @@ class Components::LibraryItems::EditView < Components::Base
               end
 
               # Action buttons
-              div(class: "flex items-center justify-between pt-6 border-t") do
+              div(class: "flex items-center justify-between pt-6 border-t border-orange-200") do
                 a(
                   href: library_item_path(@library_item),
                   class: "text-gray-600 hover:text-gray-800"
@@ -355,7 +356,7 @@ class Components::LibraryItems::EditView < Components::Base
 
                 button(
                   type: "submit",
-                  class: "bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                  class: "#{@library_item.have? ? "bg-orange-600 hover:bg-orange-700" : "bg-slate-600 hover:bg-slate-700"} text-white px-6 py-2 rounded-lg transition-colors"
                 ) { "Update Item" }
               end
             end
