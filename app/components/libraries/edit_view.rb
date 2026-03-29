@@ -12,8 +12,8 @@ class Components::Libraries::EditView < Components::Base
       div(class: "pt-20 px-4") do
         div(class: "max-w-2xl mx-auto") do
           div(class: "mb-8") do
-            h1(class: "text-3xl font-bold text-gray-900") { "Edit Library" }
-            p(class: "text-gray-600 mt-2") { "Update the name and description for this library" }
+            h1(class: "text-3xl font-bold text-gray-900") { @library.persisted? ? "Edit Library" : "New Library" }
+            p(class: "text-gray-600 mt-2") { @library.persisted? ? "Update the name and description for this library" : "Create a new library to organise your things" }
           end
 
           div(class: "bg-white rounded-lg shadow-md p-6") do
@@ -29,8 +29,8 @@ class Components::Libraries::EditView < Components::Base
               end
             end
 
-            form(action: library_path(@library), method: "post") do
-              input(type: "hidden", name: "_method", value: "patch")
+            form(action: @library.persisted? ? library_path(@library) : libraries_path, method: "post") do
+              input(type: "hidden", name: "_method", value: "patch") if @library.persisted?
               input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
 
               # Library name field
@@ -58,7 +58,21 @@ class Components::Libraries::EditView < Components::Base
                 ) { @library.description }
               end
 
-              # Bulk barcodes field
+              div(class: "mb-6") do
+                label(for: "library_default_intent", class: "block text-sm font-medium text-gray-700 mb-2") { "Default Intent" }
+                select(
+                  id: "library_default_intent",
+                  name: "library[default_intent]",
+                  class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                ) do
+                  option(value: "have", selected: @library.default_have?) { "Have \u2014 I own these items" }
+                  option(value: "want", selected: @library.default_want?) { "Want \u2014 items on my wishlist" }
+                end
+                p(class: "mt-2 text-sm text-gray-500") { "Items scanned into this library will default to this intent." }
+              end
+
+              # Bulk barcodes field (edit only)
+              if @library.persisted?
               div(class: "mb-6") do
                 label(for: "library_bulk_barcodes", class: "block text-sm font-medium text-gray-700 mb-2") { "Add Items by Barcode" }
                 textarea(
@@ -73,18 +87,19 @@ class Components::Libraries::EditView < Components::Base
                   plain "Example: 9780123456789, 9781234567890"
                 end
               end
+              end
 
               # Action buttons
               div(class: "flex items-center justify-between") do
                 a(
-                  href: library_path(@library),
+                  href: @library.persisted? ? library_path(@library) : libraries_path,
                   class: "text-gray-600 hover:text-gray-800"
                 ) { "Cancel" }
 
                 button(
                   type: "submit",
                   class: "bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-                ) { "Update Library" }
+                ) { @library.persisted? ? "Update Library" : "Create Library" }
               end
             end
           end

@@ -50,6 +50,18 @@ class Components::LibraryItems::EditView < Components::Base
                   h2(class: "text-lg font-semibold text-gray-800 mb-4 pb-2 border-b") { "Basic Information" }
 
                   div(class: "grid grid-cols-1 md:grid-cols-2 gap-4") do
+                    div do
+                      label(for: "library_item_intent", class: "block text-sm font-medium text-gray-700 mb-2") { "Intent" }
+                      select(
+                        id: "library_item_intent",
+                        name: "library_item[intent]",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                      ) do
+                        option(value: "have", selected: @library_item.have?) { "Have" }
+                        option(value: "want", selected: @library_item.want?) { "Want" }
+                      end
+                    end
+
                     # Status
                     div do
                       label(for: "library_item_item_status_id", class: "block text-sm font-medium text-gray-700 mb-2") { "Status" }

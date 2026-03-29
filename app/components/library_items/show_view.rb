@@ -1,4 +1,6 @@
 class Components::LibraryItems::ShowView < Components::Base
+  include Phlex::Rails::Helpers::FormAuthenticityToken
+
   def initialize(library_item:)
     @library_item = library_item
     @product = library_item.product
@@ -121,6 +123,19 @@ class Components::LibraryItems::ShowView < Components::Base
 
             div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
               div(class: "flex gap-3") do
+                form(action: library_item_path(@library_item), method: "post", class: "inline") do
+                  input(type: "hidden", name: "_method", value: "patch")
+                  input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
+                  input(type: "hidden", name: "library_item[intent]", value: @library_item.have? ? "want" : "have")
+                  input(type: "hidden", name: "return_to", value: library_item_path(@library_item))
+                  button(
+                    type: "submit",
+                    class: @library_item.have? ?
+                      "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors" :
+                      "bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  ) { @library_item.have? ? "Mark as Wanted" : "Got it!" }
+                end
+
                 a(
                   href: edit_library_item_path(@library_item),
                   class: "#{@library_item.have? ? "bg-orange-600 hover:bg-orange-700" : "bg-slate-600 hover:bg-slate-700"} text-white px-6 py-2 rounded-lg transition-colors"

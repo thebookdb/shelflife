@@ -56,9 +56,15 @@ class Components::Libraries::ShowView < Components::Base
                 div(class: "text-6xl mb-4") { "📚" }
                 h2(class: "text-xl font-semibold text-gray-800 mb-2") { "#{@library.name} is empty" }
                 p(class: "text-gray-600 mb-4") { "No items have been added to this library yet" }
-                a(href: root_path,
-                  class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors") do
-                  "Start Scanning"
+                div(class: "flex justify-center gap-3") do
+                  a(href: root_path,
+                    class: "bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors") do
+                    "Start Scanning"
+                  end
+                  a(href: edit_library_path(@library),
+                    class: "bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors") do
+                    "Edit Library"
+                  end
                 end
               end
             end
@@ -66,22 +72,22 @@ class Components::Libraries::ShowView < Components::Base
 
           # Pagination and action buttons at bottom
           if @products.any?
-            div(class: "mt-8") do
+            div(class: "mt-8 mb-8") do
               div(class: "flex justify-center") do
                 render_pagination if @pagy && @pagy.pages > 1
               end
 
               div(class: "flex justify-center gap-2 mt-4") do
                 a(href: import_library_path(@library),
-                  class: "bg-green-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-green-700 transition-colors") do
+                  class: "bg-gray-200 text-gray-700 px-3 py-1.5 text-sm rounded-lg hover:bg-gray-300 transition-colors") do
                   "Import"
                 end
                 a(href: export_library_path(@library, format: :csv),
-                  class: "bg-purple-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-purple-700 transition-colors") do
+                  class: "bg-gray-200 text-gray-700 px-3 py-1.5 text-sm rounded-lg hover:bg-gray-300 transition-colors") do
                   "Export CSV"
                 end
                 a(href: edit_library_path(@library),
-                  class: "bg-blue-600 text-white px-3 py-1.5 text-sm rounded-lg hover:bg-blue-700 transition-colors") do
+                  class: "bg-gray-200 text-gray-700 px-3 py-1.5 text-sm rounded-lg hover:bg-gray-300 transition-colors") do
                   "Edit Library"
                 end
               end

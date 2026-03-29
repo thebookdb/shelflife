@@ -29,6 +29,22 @@ class LibrariesController < ApplicationController
     )
   end
 
+  def new
+    @library = Library.new
+    render Components::Libraries::EditView.new(library: @library)
+  end
+
+  def create
+    @library = Library.new(library_params)
+    @library.user = Current.user
+
+    if @library.save
+      redirect_to library_path(@library), notice: "Library created successfully."
+    else
+      render Components::Libraries::EditView.new(library: @library), status: :unprocessable_entity
+    end
+  end
+
   def edit
     @library = Library.find(params[:id])
     render Components::Libraries::EditView.new(library: @library)
@@ -99,7 +115,7 @@ class LibrariesController < ApplicationController
   private
 
   def library_params
-    params.expect(library: %i[name description])
+    params.expect(library: %i[name description default_intent])
   end
 
   def process_bulk_barcodes(library, bulk_barcodes_text)
@@ -124,7 +140,8 @@ class LibrariesController < ApplicationController
       LibraryItem.create!(
         library: library,
         product: product,
-        added_by: Current.user
+        added_by: Current.user,
+        intent: library.default_intent
       )
 
       created_count += 1

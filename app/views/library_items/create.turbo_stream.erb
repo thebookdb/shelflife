@@ -7,6 +7,7 @@
     <% product = @library_item.product %>
     <div data-barcode-scanner-target="recentItem" class="flex items-center gap-2 py-1.5 px-2 rounded-lg transition-all duration-700 bg-green-100 ring-2 ring-green-400">
       <span class="text-xs text-gray-400 flex-shrink-0"><%= @library_item.date_added.strftime("%H:%M") %></span>
+      <span class="text-xs px-1 rounded <%= @library_item.have? ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800' %>"><%= @library_item.have? ? 'Have' : 'Want' %></span>
       <span class="text-sm text-gray-700 truncate flex-1"><%= product.title.presence || product.gtin %></span>
     </div>
   <% end %>

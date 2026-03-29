@@ -39,7 +39,7 @@ Rails.application.routes.draw do
   end
 
   # Library management routes
-  resources :libraries, only: [:index, :show, :edit, :update] do
+  resources :libraries, only: [:index, :show, :new, :create, :edit, :update] do
     member do
       get :import
       post :import

@@ -9,31 +9,26 @@ class Components::Libraries::IndexView < Components::Base
 
       div(class: "pt-16 px-4") do
         div(class: "max-w-4xl mx-auto") do
-          div(class: "mb-6") do
-            h1(class: "text-3xl font-bold text-gray-900") { "Libraries" }
-            p(class: "text-gray-600 mt-2") { "Your collections and libraries" }
+          div(class: "mb-6 flex items-center justify-between") do
+            div do
+              h1(class: "text-3xl font-bold text-gray-900") { "Libraries" }
+              p(class: "text-gray-600 mt-2") { "Organise your things" }
+            end
+            a(
+              href: new_library_path,
+              class: "bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm"
+            ) { "New Library" }
           end
 
-          render_section("Libraries", "Organise your things", @libraries)
+          div(class: "grid gap-3") do
+            @libraries.each { |library| render_library(library) }
+          end
         end
       end
     end
   end
 
   private
-
-  def render_section(label, description, libraries)
-    div(class: "mb-8") do
-      div(class: "mb-3") do
-        h2(class: "text-lg font-semibold text-gray-700") { label }
-        p(class: "text-sm text-gray-500") { description }
-      end
-
-      div(class: "grid gap-3") do
-        libraries.each { |library| render_library(library) }
-      end
-    end
-  end
 
   def render_library(library)
     item_count = library.library_items.size

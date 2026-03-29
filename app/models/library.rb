@@ -11,6 +11,8 @@ class Library < ApplicationRecord
     everyone: 2   # Publicly browsable and subscribable
   }
 
+  enum :default_intent, {have: 0, want: 1}, prefix: :default
+
   def self.default_libraries
     [
       {name: "Home", description: "Books and media at home"},

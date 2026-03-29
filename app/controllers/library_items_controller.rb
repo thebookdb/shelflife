@@ -21,7 +21,9 @@ class LibraryItemsController < ApplicationController
     end
 
     if @library_item.update(library_item_params.merge(updated_by: Current.user))
-      redirect_to library_path(@library_item.library), notice: "Item updated successfully."
+      return_to = params[:return_to]
+      redirect_path = (return_to&.match?(%r{\A/[^/]}) ? return_to : nil) || library_path(@library_item.library)
+      redirect_to redirect_path, notice: "Item updated successfully."
     else
       render Components::LibraryItems::EditView.new(library_item: @library_item), status: :unprocessable_entity
     end
@@ -78,7 +80,7 @@ class LibraryItemsController < ApplicationController
     if params[:library_item][:exist] == "1"
       # Checkbox is checked - create if doesn't exist
       if existing_item.nil?
-        @library_item = LibraryItem.new(product: @product, library: @library, added_by: Current.user)
+        @library_item = LibraryItem.new(product: @product, library: @library, added_by: Current.user, intent: @library.default_intent)
         @library_item.save
       else
         @library_item = existing_item
@@ -113,7 +115,8 @@ class LibraryItemsController < ApplicationController
     @library_item = existing_item || LibraryItem.create!(
       product: product,
       library: library,
-      added_by: Current.user
+      added_by: Current.user,
+      intent: library.default_intent
     )
 
     # Broadcast refresh to library show page for real-time updates
