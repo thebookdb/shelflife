@@ -36,7 +36,7 @@ class Components::Summary::DashboardView < Components::Base
 
       if items.any?
         div(class: "flex gap-4 overflow-x-auto pb-2") do
-          items.each { |item| render_book_card(item.product) }
+          items.each { |item| render_book_card(item) }
         end
       else
         div(class: "text-gray-400 text-base italic py-4") { "No items yet — scan something!" }
@@ -46,9 +46,11 @@ class Components::Summary::DashboardView < Components::Base
     end
   end
 
-  def render_book_card(product)
-    a(href: "/#{product.gtin}", class: "flex-shrink-0 group w-28") do
-      div(class: "w-28 h-40 rounded-lg overflow-hidden shadow-md mb-2 bg-gray-200 border border-gray-100 group-hover:shadow-lg transition-shadow") do
+  def render_book_card(library_item)
+    product = library_item.product
+
+    a(href: library_item_path(library_item), class: "flex-shrink-0 group w-28") do
+      div(class: "w-28 h-40 rounded-lg overflow-hidden shadow-md mb-2 bg-gray-200 border-b-4 #{intent_border_class(library_item)} group-hover:shadow-lg transition-shadow") do
         if product.cover_image.attached?
           img(src: url_for(product.cover_image), alt: product.title, class: "w-full h-full object-cover")
         elsif product.cover_image_url.present?

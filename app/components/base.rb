@@ -14,6 +14,10 @@ class Components::Base < Phlex::HTML
   register_element :turbo_frame
   register_element :turbo_cable_stream_source
 
+  def intent_border_class(item)
+    item&.have? ? "border-orange-500" : "border-slate-400"
+  end
+
   if Rails.env.development?
     def before_template
       comment { "Before #{self.class.name}" }

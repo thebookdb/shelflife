@@ -1,113 +1,83 @@
 class Components::Libraries::ProductGroupView < Components::Base
-  def initialize(product:, library_items:)
+  def initialize(product:, library_items:, library:)
     @product = product
     @library_items = library_items
+    @library = library
   end
 
   def view_template
-    div(class: "bg-white rounded-lg shadow-md overflow-hidden mb-4") do
-      # Product header with cover and basic info
-      div(class: "p-4 flex items-start gap-4 border-b border-gray-200") do
-        # Cover art
-        div(class: "flex-shrink-0") do
-          if @product.cover_image.attached?
-            img(
-              src: Rails.application.routes.url_helpers.rails_blob_path(@product.cover_image, only_path: true),
-              alt: @product.safe_title,
-              class: "w-20 h-28 object-cover rounded shadow-sm"
-            )
-          elsif @product.cover_image_url.present?
-            img(
-              src: @product.cover_image_url,
-              alt: @product.safe_title,
-              class: "w-20 h-28 object-cover rounded shadow-sm"
-            )
-          else
-            div(class: "w-20 h-28 bg-gray-200 rounded flex items-center justify-center") do
-              span(class: "text-3xl") { product_icon(@product.product_type) }
-            end
-          end
-        end
+    @library_items.each do |item|
+      render_item_card(item)
+    end
+  end
 
-        # Product details
-        div(class: "flex-1") do
-          a(href: "/#{@product.gtin}", class: "text-xl font-semibold text-gray-900 hover:text-blue-600 transition-colors") do
-            @product.safe_title
-          end
+  private
 
-          if @product.author.present?
-            p(class: "text-gray-600 mt-1") { "by #{@product.author}" }
-          end
-
-          div(class: "flex flex-wrap items-center mt-2 text-sm text-gray-500 gap-2") do
-            span(class: "bg-gray-100 px-2 py-1 rounded") { (@product.product_type || "other").humanize }
-            span { "GTIN: #{@product.gtin}" }
-          end
-        end
-
-        # Intent badges
-        div(class: "flex-shrink-0 flex gap-2") do
-          have_count = @library_items.count { |i| i.have? }
-          want_count = @library_items.count { |i| i.want? }
-
-          if have_count > 0
-            div(class: "bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold") do
-              plain (have_count > 1) ? "#{have_count} owned" : "Owned"
+  def render_item_card(item)
+    div(class: "mb-4 bg-orange-50 rounded-lg shadow-md overflow-hidden border-l-4 #{intent_border_class(item)}") do
+      # Product zone — links to product
+      a(href: product_path(@product), class: "block m-4 mb-3 rounded-lg border border-slate-200 border-l-4 border-l-slate-400 bg-slate-50/50 hover:bg-slate-100/70 transition-colors") do
+        div(class: "p-3 flex items-start gap-3") do
+          div(class: "flex-shrink-0") do
+            if @product.cover_image.attached?
+              img(
+                src: Rails.application.routes.url_helpers.rails_blob_path(@product.cover_image, only_path: true),
+                alt: @product.safe_title,
+                class: "w-14 h-20 object-cover rounded shadow-sm"
+              )
+            elsif @product.cover_image_url.present?
+              img(
+                src: @product.cover_image_url,
+                alt: @product.safe_title,
+                class: "w-14 h-20 object-cover rounded shadow-sm"
+              )
+            else
+              div(class: "w-14 h-20 bg-gray-200 rounded flex items-center justify-center") do
+                span(class: "text-2xl") { product_icon(@product.product_type) }
+              end
             end
           end
 
-          if want_count > 0
-            div(class: "bg-amber-100 text-amber-800 px-3 py-1 rounded-full text-sm font-semibold") do
-              plain (want_count > 1) ? "#{want_count} wanted" : "Wanted"
+          div(class: "flex-1 min-w-0") do
+            p(class: "font-semibold text-gray-900 leading-tight hover:text-slate-600 transition-colors") do
+              @product.safe_title
+            end
+
+            if @product.author.present?
+              p(class: "text-sm text-gray-500 mt-0.5") { "by #{@product.author}" }
+            end
+
+            div(class: "flex flex-wrap items-center mt-1.5 text-xs text-gray-400 gap-2") do
+              span(class: "bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded") do
+                (@product.product_type || "other").humanize
+              end
+              span(class: "font-mono") { @product.gtin }
             end
           end
         end
       end
 
-      # List of copies
-      div(class: "bg-gray-50") do
-        @library_items.each_with_index do |item, index|
-          div(class: "px-4 py-3 #{"border-t border-gray-200" if index > 0}") do
-            div(class: "flex items-center justify-between") do
-              # Copy info
-              div(class: "flex-1") do
-                div(class: "flex items-center gap-3 text-sm") do
-                  if item.want?
-                    span(class: "px-2 py-1 rounded text-xs font-medium bg-amber-100 text-amber-800") { "Want" }
-                  else
-                    span(class: "px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800") { "Have" }
-                  end
-
-                  if item.item_status&.name.present?
-                    status_color = status_badge_color(item.item_status.name)
-                    span(class: "px-2 py-1 rounded text-xs font-medium #{status_color}") do
-                      item.item_status.name
-                    end
-                  end
-
-                  if item.condition.present?
-                    span(class: "text-gray-600") { "Condition: #{item.condition}" }
-                  end
-
-                  if item.location.present?
-                    span(class: "text-gray-600") { "📍 #{item.location}" }
-                  end
-                end
-
-                if item.notes.present?
-                  p(class: "text-sm text-gray-600 mt-1") { item.notes }
-                end
-              end
-
-              # Actions
-              div(class: "flex items-center gap-2") do
-                a(
-                  href: library_item_path(item),
-                  class: "text-blue-600 hover:text-blue-800 font-medium text-sm"
-                ) { "Manage" }
-              end
-            end
+      # Your copy zone — links to library item
+      a(href: library_item_path(item), class: "block px-4 pb-4 hover:bg-orange-100/50 transition-colors rounded-b-lg") do
+        p(class: "text-sm text-gray-800") do
+          plain(item.have? ? "Added to " : "Wishlisted in ")
+          span(class: "font-semibold") { @library.name }
+          if item.date_added.present?
+            plain " on #{item.date_added.strftime("%-d %B %Y")}"
           end
+        end
+
+        details = []
+        details << "Condition: #{item.condition.name}" if item.condition.present?
+        details << item.item_status.name if item.item_status.present?
+        details << item.location if item.location.present?
+
+        if details.any?
+          p(class: "text-xs text-gray-500 mt-1") { details.join(" · ") }
+        end
+
+        if item.notes.present?
+          p(class: "text-xs text-gray-400 mt-1.5 italic") { item.notes }
         end
       end
     end
@@ -130,25 +100,6 @@ class Components::Libraries::ProductGroupView < Components::Base
     when "ereader" then "📖"
     when "table_top_game" then "🎲"
     else "📦"
-    end
-  end
-
-  def status_badge_color(status_name)
-    case status_name
-    when "Available"
-      "bg-green-100 text-green-800"
-    when "Checked Out"
-      "bg-yellow-100 text-yellow-800"
-    when "Missing"
-      "bg-red-100 text-red-800"
-    when "Damaged"
-      "bg-orange-100 text-orange-800"
-    when "In Repair"
-      "bg-purple-100 text-purple-800"
-    when "Retired"
-      "bg-gray-100 text-gray-800"
-    else
-      "bg-blue-100 text-blue-800"
     end
   end
 end

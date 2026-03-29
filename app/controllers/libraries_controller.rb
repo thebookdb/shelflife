@@ -7,7 +7,7 @@ class LibrariesController < ApplicationController
   def show
     @library = Library.find(params[:id])
 
-    library_items = @library.library_items.includes(:product)
+    library_items = @library.library_items.includes(:product, :condition, :item_status)
 
     # Filter out invalid barcodes if user has that setting enabled
     if Current.user.hide_invalid_barcodes?

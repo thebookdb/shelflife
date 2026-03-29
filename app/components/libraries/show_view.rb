@@ -47,7 +47,8 @@ class Components::Libraries::ShowView < Components::Base
                 library_items = @grouped_items[product]
                 render Components::Libraries::ProductGroupView.new(
                   product: product,
-                  library_items: library_items
+                  library_items: library_items,
+                  library: @library
                 )
               end
             else
