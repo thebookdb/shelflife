@@ -25,7 +25,7 @@ class Components::Products::DisplayDataView < Components::Base
             )
           else
             div(class: "w-16 h-24 bg-gray-200 rounded flex items-center justify-center") do
-              span(class: "text-2xl") { product_icon }
+              span(class: "text-2xl") { product_icon(@product.product_type) }
             end
           end
         end
@@ -188,23 +188,6 @@ class Components::Products::DisplayDataView < Components::Base
 
   private
 
-  def product_icon
-    case @product.product_type
-    when "book" then "📚"
-    when "video" then "💿"
-    when "ebook" then "📱"
-    when "audiobook" then "🎧"
-    when "toy" then "🧸"
-    when "lego" then "🧱"
-    when "pop" then "🎭"
-    when "graphic_novel" then "📖"
-    when "box_set" then "📦"
-    when "music" then "🎵"
-    when "ereader" then "📖"
-    when "table_top_game" then "🎲"
-    else "📦"
-    end
-  end
 
   def truncated_description
     return @product.description if @product.description.length <= 150

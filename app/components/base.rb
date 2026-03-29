@@ -18,6 +18,24 @@ class Components::Base < Phlex::HTML
     item&.have? ? "border-orange-500" : "border-slate-400"
   end
 
+  def product_icon(product_type)
+    case product_type
+    when "book" then "📚"
+    when "video" then "💿"
+    when "ebook" then "📱"
+    when "audiobook" then "🎧"
+    when "toy" then "🧸"
+    when "lego" then "🧱"
+    when "pop" then "🎭"
+    when "graphic_novel" then "📖"
+    when "box_set" then "📦"
+    when "music" then "🎵"
+    when "ereader" then "📖"
+    when "table_top_game" then "🎲"
+    else "📦"
+    end
+  end
+
   if Rails.env.development?
     def before_template
       comment { "Before #{self.class.name}" }
