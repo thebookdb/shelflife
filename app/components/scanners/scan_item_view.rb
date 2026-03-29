@@ -132,7 +132,6 @@ class Components::Scanners::ScanItemView < Components::Base
     end
   end
 
-
   def time_ago_in_words(time)
     return "Just now" unless time
 

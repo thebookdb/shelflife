@@ -64,7 +64,6 @@ class Components::Scanners::IndexView < Components::Base
         # Scanning overlay (hidden until scanning)
         div(class: "absolute inset-0 z-20 pointer-events-none hidden",
           data_barcode_scanner_target: "scanOverlay") do
-
           # Active camera label — top center
           div(
             data_barcode_scanner_target: "cameraLabel",
@@ -87,7 +86,7 @@ class Components::Scanners::IndexView < Components::Base
           div(
             data_barcode_scanner_target: "cameraTab",
             data_action: "click->barcode-scanner#toggleCameraDrawer",
-            class: "absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur rounded-r-lg px-1.5 py-3 shadow-lg cursor-pointer pointer-events-auto transition-opacity",
+            class: "absolute left-0 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur rounded-r-lg px-1.5 py-3 shadow-lg cursor-pointer pointer-events-auto transition-opacity"
           ) do
             span(class: "text-gray-700 text-sm") { "›" }
           end

@@ -84,5 +84,4 @@ class Components::Libraries::ProductGroupView < Components::Base
   end
 
   private
-
 end

@@ -97,5 +97,4 @@ class Components::Libraries::LibraryItemView < Components::Base
   rescue
     "/placeholder-image.jpg" # fallback for background jobs
   end
-
 end

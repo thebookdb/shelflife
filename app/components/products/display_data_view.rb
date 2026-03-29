@@ -188,7 +188,6 @@ class Components::Products::DisplayDataView < Components::Base
 
   private
 
-
   def truncated_description
     return @product.description if @product.description.length <= 150
 

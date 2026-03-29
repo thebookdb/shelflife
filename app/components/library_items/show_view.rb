@@ -177,5 +177,4 @@ class Components::LibraryItems::ShowView < Components::Base
     return nil unless amount.present?
     "$#{"%.2f" % amount}"
   end
-
 end
