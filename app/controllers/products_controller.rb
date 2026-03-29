@@ -18,7 +18,7 @@ class ProductsController < ApplicationController
 
     begin
       product = Product.find_or_create_by_gtin(gtin, {product_type: product_type})
-      redirect_to gtin_path(product.gtin), notice: "#{product.safe_title} added."
+      redirect_to gtin_path(product), notice: "#{product.safe_title} added."
     rescue ArgumentError => e
       render Components::Products::NewView.new(gtin: gtin, error: e.message), status: :unprocessable_entity
     end
@@ -33,14 +33,14 @@ class ProductsController < ApplicationController
   end
 
   def refresh
-    @product = Product.find(params[:id])
+    @product = Product.find_by!(gtin: params[:id])
     ProductDataFetchJob.perform_later(@product, true)
 
-    redirect_to gtin_path(@product.gtin), notice: "Refreshing data for #{@product.safe_title}..."
+    redirect_to gtin_path(@product), notice: "Refreshing data for #{@product.safe_title}..."
   end
 
   def destroy
-    @product = Product.find(params[:id])
+    @product = Product.find_by!(gtin: params[:id])
     product_title = @product.safe_title
     library_ids = @product.libraries.distinct.pluck(:id)
 

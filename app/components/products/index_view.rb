@@ -16,7 +16,7 @@ class Components::Products::IndexView < Components::Base
             div(class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4") do
               @products.each do |product|
                 library_item = product.library_items.max_by(&:created_at)
-                card_href = library_item ? library_item_path(library_item) : gtin_path(product.gtin)
+                card_href = library_item ? library_item_path(library_item) : gtin_path(product)
 
                 a(href: card_href, class: "group block") do
                   div(class: "flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all hover:shadow-sm border-l-4 #{intent_border_class(library_item)}") do

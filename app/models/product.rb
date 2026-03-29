@@ -91,6 +91,10 @@ class Product < ApplicationRecord
     library_items.where(library: library).count
   end
 
+  def to_param
+    gtin
+  end
+
   # Safe title that falls back to GTIN if title is not set
   def safe_title
     title.presence || "Product #{gtin}"

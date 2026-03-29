@@ -48,7 +48,7 @@ class Components::LibraryItems::ShowView < Components::Base
                 end
 
                 div(class: "flex-1 min-w-0") do
-                  a(href: gtin_path(@product.gtin), class: "text-lg font-semibold text-slate-700 hover:text-slate-900 transition-colors") do
+                  a(href: gtin_path(@product), class: "text-lg font-semibold text-slate-700 hover:text-slate-900 transition-colors") do
                     @product.safe_title
                   end
 
