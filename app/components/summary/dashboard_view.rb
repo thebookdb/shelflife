@@ -26,7 +26,9 @@ class Components::Summary::DashboardView < Components::Base
   def render_library_section(library, items)
     div(class: "mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6") do
       div(class: "flex items-baseline gap-3 mb-4") do
-        h2(class: "text-xl font-bold text-gray-900") { library.name }
+        a(href: library_path(library), class: "hover:text-primary-600 transition-colors") do
+          h2(class: "text-xl font-bold text-gray-900") { library.name }
+        end
         if library.description.present?
           span(class: "text-sm text-gray-400") { library.description }
         end
