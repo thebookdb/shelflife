@@ -13,7 +13,7 @@ class Components::Products::DisplayView < Components::Base
 
     # Main container with proper centering
     div(id: "product-container-#{@product.id}", data: {product_id: @product.id}, class: "max-w-5xl mx-auto px-4 sm:px-6 lg:px-8") do
-      div(class: "bg-white rounded-lg shadow-md overflow-hidden") do
+      div(class: "bg-white rounded-lg shadow-md overflow-hidden border-l-4 border-slate-400") do
         # Product data section - uses DisplayDataView for consistency
         turbo_frame(id: "product-data") do
           render Components::Products::DisplayDataView.new(product: @product, libraries: @libraries)

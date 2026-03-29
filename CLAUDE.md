@@ -103,6 +103,23 @@ Join between Library and Product — "this user has this product in this library
 
 Single shared `TbdbConnection` singleton for OAuth (not per-user). `Tbdb::Client` makes authenticated requests (lazy validation). `Tbdb::OauthService` handles OAuth lifecycle.
 
+## Visual Language
+
+Two distinct color palettes communicate whether you're looking at a **Product** (a thing that exists in the world) or a **Library Item** (your copy of that thing):
+
+- **Owned (have)** — Blood orange (`orange-600`/`orange-100`). Personal, warm. Header: "Your Copy". Border accent: `border-l-4 border-orange-500`.
+- **Not owned** — Slate blue (`slate-600`/`slate-100`). Neutral, informational. Covers: products not in any library, search results, and `want` (wishlist) items. Header: "About This Product" for products, "On Your Wishlist" for want items. Border accent: `border-l-4 border-slate-400`.
+
+The colour follows **ownership**, not whether something is a library item. A `want` item is still a LibraryItem (with its own notes, tags, etc.) but gets slate blue because you don't have it yet.
+
+These manifest as:
+- A left-edge border on cards and detail views (bottom-edge on cover-art thumbnail cards)
+- Coloured date spine on library item rows in library views
+- Consistent header language ("Your Copy" vs "On Your Wishlist" vs "About This Product")
+- Breadcrumbs: Product pages show `Products > Title`, Library item pages show `Library Name > Title`
+
+**Navigation rule:** Clicking an item that is in a library (have or want) navigates to the **Library Item** detail view. Clicking a product not in any library navigates to the **Product** view.
+
 ## important-instruction-reminders
 Do what has been asked; nothing more, nothing less.
 NEVER create files unless they're absolutely necessary for achieving your goal.

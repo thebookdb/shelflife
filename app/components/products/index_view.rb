@@ -15,8 +15,11 @@ class Components::Products::IndexView < Components::Base
           div(class: "bg-white rounded-xl shadow-sm border border-gray-100 p-6") do
             div(class: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4") do
               @products.each do |product|
-                a(href: "/#{product.gtin}", class: "group block") do
-                  div(class: "flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all hover:shadow-sm") do
+                library_item = product.library_items.max_by(&:created_at)
+                card_href = library_item ? library_item_path(library_item) : product_path(product)
+
+                a(href: card_href, class: "group block") do
+                  div(class: "flex items-center gap-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-all hover:shadow-sm border-l-4 #{intent_border_class(library_item)}") do
                     div(class: "flex-shrink-0") do
                       if product.cover_image.attached?
                         img(src: url_for(product.cover_image), alt: product.title, class: "w-16 h-20 object-cover rounded border shadow-sm")

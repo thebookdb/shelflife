@@ -11,7 +11,7 @@ class Components::Libraries::LibraryItemView < Components::Base
   def view_template
     product = @library_item.product
 
-    div(class: "bg-white rounded-lg shadow-md p-4 flex items-center gap-4", id: "library_item_#{@library_item.id}") do
+    div(class: "bg-orange-50 rounded-lg shadow-md p-4 flex items-center gap-4 border-l-4 #{intent_border_class(@library_item)}", id: "library_item_#{@library_item.id}") do
       # Cover art section
       div(class: "flex-shrink-0") do
         if product.cover_image.attached?
@@ -77,7 +77,7 @@ class Components::Libraries::LibraryItemView < Components::Base
 
       # Actions section
       div(class: "flex flex-col items-end space-y-2") do
-        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
+        a(href: library_item_path(@library_item), class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
         form_with url: "/library_items/#{@library_item.id}", method: :delete, class: "inline", local: true do |f|
           f.button "Remove",
             type: "submit",
