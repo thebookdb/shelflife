@@ -78,5 +78,5 @@ Rails.application.routes.draw do
   end
 
   # GTIN route - must be last to avoid conflicts
-  get "/:gtin", to: "products#show", constraints: {gtin: /\d{13}/}
+  get "/:gtin", to: "products#show", as: :gtin, constraints: {gtin: /\d{13}/}
 end

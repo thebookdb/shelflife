@@ -51,7 +51,7 @@ class Components::Libraries::LibraryItemDataView < Components::Base
 
       # Actions section - data only, no forms
       div(class: "flex flex-col items-end space-y-2") do
-        a(href: "/#{product.gtin}", class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
+        a(href: gtin_path(product.gtin), class: "text-blue-600 hover:text-blue-800 font-medium") { "View" }
       end
     end
   end

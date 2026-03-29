@@ -16,7 +16,7 @@ class Components::Libraries::ProductGroupView < Components::Base
   def render_item_card(item)
     div(class: "mb-4 bg-orange-50 rounded-lg shadow-md overflow-hidden border-l-4 #{intent_border_class(item)}") do
       # Product zone — links to product
-      a(href: "/#{@product.gtin}", class: "block m-4 mb-3 rounded-lg border border-slate-200 border-l-4 border-l-slate-400 bg-slate-50/50 hover:bg-slate-100/70 transition-colors") do
+      a(href: gtin_path(@product.gtin), class: "block m-4 mb-3 rounded-lg border border-slate-200 border-l-4 border-l-slate-400 bg-slate-50/50 hover:bg-slate-100/70 transition-colors") do
         div(class: "p-3 flex items-start gap-3") do
           div(class: "flex-shrink-0") do
             if @product.cover_image.attached?
