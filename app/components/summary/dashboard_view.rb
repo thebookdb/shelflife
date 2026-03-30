@@ -8,8 +8,9 @@ class Components::Summary::DashboardView < Components::Base
     "none" => "None"
   }.freeze
 
-  def initialize(libraries_with_items: [], show_onboarding: false)
+  def initialize(libraries_with_items: [], trophy_items: [], show_onboarding: false)
     @libraries_with_items = libraries_with_items
+    @trophy_items = trophy_items
     @show_onboarding = show_onboarding
   end
 
@@ -17,11 +18,12 @@ class Components::Summary::DashboardView < Components::Base
     render Components::Shared::OnboardingModalView.new if @show_onboarding
 
     div(class: "min-h-screen bg-gray-50 pt-16") do
-      div(class: "py-8 max-w-6xl mx-auto px-4") do
+      div(class: "pt-4 pb-8 max-w-6xl mx-auto px-4") do
         h1(class: "text-3xl font-bold text-gray-900 mb-6") { "Dashboard" }
         if @libraries_with_items.empty?
           render_empty_state
         else
+          render_trophy_shelf if @trophy_items.any?
           @libraries_with_items.each_with_index do |entry, index|
             render_library_section(entry[:library], entry[:items], entry[:group_by], index)
           end
@@ -31,6 +33,41 @@ class Components::Summary::DashboardView < Components::Base
   end
 
   private
+
+  def render_trophy_shelf
+    div(class: "mb-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl shadow-sm border border-amber-200 p-6") do
+      div(class: "flex items-baseline gap-2 mb-4") do
+        h2(class: "text-xl font-bold text-amber-800") { "Trophy Shelf" }
+        span(class: "text-sm text-amber-500") { "Your favourites" }
+      end
+
+      div(class: "flex gap-4 overflow-x-auto pb-2") do
+        @trophy_items.each { |item| render_trophy_card(item) }
+      end
+    end
+  end
+
+  def render_trophy_card(library_item)
+    product = library_item.product
+
+    a(href: library_item_path(library_item), class: "flex-shrink-0 group w-28") do
+      div(class: "relative w-28 h-40 rounded-lg overflow-hidden shadow-md mb-2 bg-gray-200 border-b-4 border-amber-400 group-hover:shadow-lg transition-shadow ring-2 ring-amber-300/50") do
+        if product.cover_image.attached?
+          img(src: url_for(product.cover_image), alt: product.title, class: "w-full h-full object-cover")
+        elsif product.cover_image_url.present?
+          img(src: product.cover_image_url, alt: product.title, class: "w-full h-full object-cover")
+        else
+          div(class: "w-full h-full flex items-center justify-center") do
+            span(class: "text-4xl") { "📚" }
+          end
+        end
+      end
+      p(class: "text-xs font-semibold text-amber-900 leading-tight line-clamp-2 group-hover:text-amber-700 transition-colors") { product.title }
+      if product.author.present?
+        p(class: "text-xs text-amber-500 mt-0.5 truncate") { product.author }
+      end
+    end
+  end
 
   def render_library_section(library, items, group_by, index)
     div(class: "mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6") do

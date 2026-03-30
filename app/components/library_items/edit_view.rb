@@ -28,7 +28,7 @@ class Components::LibraryItems::EditView < Components::Base
             h1(class: "text-3xl font-bold text-gray-900") { "Edit Your Copy" }
           end
 
-          div(class: "bg-orange-50 rounded-lg shadow-md p-6 border-l-4 #{intent_border_class(@library_item)}") do
+          div(class: "bg-orange-50 rounded-lg shadow-md p-6 border-l-4 #{intent_border_class(@library_item)} relative") do
             # Display errors if any
             if @library_item.errors.any?
               div(class: "mb-6 bg-red-50 border border-red-200 rounded-lg p-4") do
@@ -44,6 +44,23 @@ class Components::LibraryItems::EditView < Components::Base
             form(action: library_item_path(@library_item), method: "post") do
               input(type: "hidden", name: "_method", value: "patch")
               input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
+
+              # Favourite toggle - top right
+              div(class: "absolute top-4 right-4") do
+                label(for: "library_item_is_favorite", class: "flex items-center gap-1.5 cursor-pointer select-none") do
+                  input(
+                    type: "checkbox",
+                    id: "library_item_is_favorite",
+                    name: "library_item[is_favorite]",
+                    value: "1",
+                    checked: @library_item.is_favorite,
+                    class: "hidden peer"
+                  )
+                  star_class = @library_item.is_favorite ? "text-2xl peer-checked:scale-110 transition-transform" : "text-2xl peer-checked:scale-110 transition-transform opacity-40 grayscale"
+                  span(class: star_class) { "⭐" }
+                  span(class: "text-xs font-medium text-gray-500") { "Trophy" }
+                end
+              end
 
               div(class: "mb-8") do
                 # Basic Information Section
@@ -350,19 +367,6 @@ class Components::LibraryItems::EditView < Components::Base
                       placeholder: "Comma-separated tags (e.g., favorite, signed, first-edition)",
                       class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
                     )
-                  end
-
-                  # Is Favorite
-                  div(class: "flex items-center") do
-                    input(
-                      type: "checkbox",
-                      id: "library_item_is_favorite",
-                      name: "library_item[is_favorite]",
-                      value: "1",
-                      checked: @library_item.is_favorite,
-                      class: "h-4 w-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-                    )
-                    label(for: "library_item_is_favorite", class: "ml-2 text-sm font-medium text-gray-700") { "Mark as favorite ⭐" }
                   end
                 end
               end

@@ -16,10 +16,17 @@ class SummaryController < ApplicationController
       {library: library, items: items, group_by: group_by}
     end
 
+    trophy_items = LibraryItem
+      .joins(:product, :library)
+      .where(is_favorite: true, libraries: {user: [Current.user, nil]})
+      .includes(:product, :library)
+      .order(updated_at: :desc)
+
     show_onboarding = Current.user && !Current.user.get_setting("onboarding_dismissed", false)
 
     render Components::Summary::DashboardView.new(
       libraries_with_items: libraries_with_items,
+      trophy_items: trophy_items,
       show_onboarding: show_onboarding
     )
   end
