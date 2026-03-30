@@ -7,7 +7,8 @@ class LibraryItemsController < ApplicationController
   end
 
   def show
-    render Components::LibraryItems::ShowView.new(library_item: @library_item)
+    @libraries = Library.where(user: [Current.user, nil]).order(:name)
+    render Components::LibraryItems::ShowView.new(library_item: @library_item, libraries: @libraries)
   end
 
   def edit
@@ -18,6 +19,13 @@ class LibraryItemsController < ApplicationController
     # Convert tags string to array if present
     if params[:library_item][:tags].present?
       params[:library_item][:tags] = params[:library_item][:tags].split(",").map(&:strip).reject(&:blank?)
+    end
+
+    # Update product genre if provided
+    if params[:product].present? && params[:product][:genre].present?
+      @library_item.product.update(genre: params[:product][:genre])
+    elsif params[:product].present? && params[:product][:genre] == ""
+      @library_item.product.update(genre: nil)
     end
 
     if @library_item.update(library_item_params.merge(updated_by: Current.user))
@@ -50,6 +58,7 @@ class LibraryItemsController < ApplicationController
 
   def library_item_params
     params.require(:library_item).permit(
+      :library_id,
       :location,
       :condition_id,
       :condition_notes,

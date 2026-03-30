@@ -131,6 +131,26 @@ class Components::LibraryItems::EditView < Components::Base
                       end
                     end
 
+                    # Genre (on product)
+                    div do
+                      label(for: "product_genre", class: "block text-sm font-medium text-gray-700 mb-2") { "Genre" }
+                      select(
+                        id: "product_genre",
+                        name: "product[genre]",
+                        class: "w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500",
+                        data: {
+                          controller: "slim-select",
+                          slim_select_allow_create_value: true,
+                          slim_select_placeholder_value: "Select or type genre..."
+                        }
+                      ) do
+                        option(value: "", selected: @product.genre.blank?)
+                        Product.where.not(genre: [nil, ""]).distinct.pluck(:genre).sort.each do |genre|
+                          option(value: genre, selected: @product.genre == genre) { genre }
+                        end
+                      end
+                    end
+
                     # Copy Identifier
                     div do
                       label(for: "library_item_copy_identifier", class: "block text-sm font-medium text-gray-700 mb-2") { "Copy ID" }

@@ -1,4 +1,13 @@
 class Components::Summary::DashboardView < Components::Base
+  include Phlex::Rails::Helpers::FormAuthenticityToken
+
+  GROUP_BY_OPTIONS = {
+    "genre" => "Genre",
+    "product_type" => "Type",
+    "author" => "Author",
+    "none" => "None"
+  }.freeze
+
   def initialize(libraries_with_items: [], show_onboarding: false)
     @libraries_with_items = libraries_with_items
     @show_onboarding = show_onboarding
@@ -13,8 +22,8 @@ class Components::Summary::DashboardView < Components::Base
         if @libraries_with_items.empty?
           render_empty_state
         else
-          @libraries_with_items.each do |entry|
-            render_library_section(entry[:library], entry[:items])
+          @libraries_with_items.each_with_index do |entry, index|
+            render_library_section(entry[:library], entry[:items], entry[:group_by], index)
           end
         end
       end
@@ -23,9 +32,23 @@ class Components::Summary::DashboardView < Components::Base
 
   private
 
-  def render_library_section(library, items)
+  def render_library_section(library, items, group_by, index)
     div(class: "mb-6 bg-white rounded-xl shadow-sm border border-gray-100 p-6") do
-      div(class: "flex items-baseline gap-3 mb-4") do
+      render_library_header(library, group_by, index)
+
+      if items.any?
+        render_grouped_items(items, group_by)
+      else
+        div(class: "text-gray-400 text-base italic py-4") { "No items yet — scan something!" }
+      end
+
+      render_recommendations
+    end
+  end
+
+  def render_library_header(library, group_by, index)
+    div(class: "flex items-center justify-between mb-4") do
+      div(class: "flex items-baseline gap-3") do
         a(href: library_path(library), class: "hover:text-primary-600 transition-colors") do
           h2(class: "text-xl font-bold text-gray-900") { library.name }
         end
@@ -34,15 +57,113 @@ class Components::Summary::DashboardView < Components::Base
         end
       end
 
-      if items.any?
-        div(class: "flex gap-4 overflow-x-auto pb-2") do
-          items.each { |item| render_book_card(item) }
+      div(
+        class: "relative",
+        data: {
+          controller: "dashboard-settings",
+          "dashboard-settings-library-id-value": library.id
+        }
+      ) do
+        button(
+          type: "button",
+          class: "p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition-colors",
+          data: {action: "click->dashboard-settings#toggle"}
+        ) do
+          svg(xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20", fill: "currentColor", class: "w-5 h-5") do |s|
+            s.path(
+              fill_rule: "evenodd",
+              d: "M7.84 1.804A1 1 0 018.82 1h2.36a1 1 0 01.98.804l.331 1.652a6.993 6.993 0 011.929 1.115l1.598-.54a1 1 0 011.186.447l1.18 2.044a1 1 0 01-.205 1.251l-1.267 1.113a7.047 7.047 0 010 2.228l1.267 1.113a1 1 0 01.206 1.25l-1.18 2.045a1 1 0 01-1.187.447l-1.598-.54a6.993 6.993 0 01-1.929 1.115l-.33 1.652a1 1 0 01-.98.804H8.82a1 1 0 01-.98-.804l-.331-1.652a6.993 6.993 0 01-1.929-1.115l-1.598.54a1 1 0 01-1.186-.447l-1.18-2.044a1 1 0 01.205-1.251l1.267-1.114a7.05 7.05 0 010-2.227L1.821 7.773a1 1 0 01-.206-1.25l1.18-2.045a1 1 0 011.187-.447l1.598.54A6.993 6.993 0 017.51 3.456l.33-1.652zM10 13a3 3 0 100-6 3 3 0 000 6z",
+              clip_rule: "evenodd"
+            )
+          end
         end
-      else
-        div(class: "text-gray-400 text-base italic py-4") { "No items yet — scan something!" }
-      end
 
-      render_recommendations
+        div(
+          class: "hidden absolute right-0 top-8 z-20 bg-white border border-gray-200 rounded-lg shadow-lg w-48",
+          data: {"dashboard-settings-target": "menu"}
+        ) do
+          div(class: "p-2") do
+            p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide px-2 py-1") { "Group by" }
+            GROUP_BY_OPTIONS.each do |value, label|
+              active = value == group_by
+              button(
+                type: "button",
+                class: "w-full text-left px-2 py-1.5 text-sm rounded #{active ? "bg-orange-50 text-orange-700 font-medium" : "text-gray-700 hover:bg-gray-50"}",
+                data: {action: "click->dashboard-settings#setGroupBy", value: value}
+              ) do
+                plain label
+                if active
+                  plain " "
+                  span(class: "text-orange-500") { "✓" }
+                end
+              end
+            end
+
+            div(class: "border-t border-gray-100 mt-1 pt-1") do
+              p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide px-2 py-1") { "Order" }
+              if index > 0
+                button(
+                  type: "button",
+                  class: "w-full text-left px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 rounded",
+                  data: {action: "click->dashboard-settings#moveUp"}
+                ) { "Move up" }
+              end
+              if index < @libraries_with_items.size - 1
+                button(
+                  type: "button",
+                  class: "w-full text-left px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50 rounded",
+                  data: {action: "click->dashboard-settings#moveDown"}
+                ) { "Move down" }
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+
+  def render_grouped_items(items, group_by)
+    if group_by == "none"
+      div(class: "flex gap-4 overflow-x-auto pb-2") do
+        items.each { |item| render_book_card(item) }
+      end
+      return
+    end
+
+    grouped = items.group_by { |item| group_value(item, group_by) }
+    named_groups = grouped.except(nil).sort_by { |_, v| -v.size }
+    ungrouped = grouped[nil] || []
+
+    rows_shown = 0
+
+    named_groups.each do |label, group_items|
+      break if rows_shown >= 3
+
+      p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide mt-3 mb-1.5") { label }
+      div(class: "flex gap-4 overflow-x-auto pb-2") do
+        group_items.each { |item| render_book_card(item) }
+      end
+      rows_shown += 1
+    end
+
+    if ungrouped.any? && rows_shown < 3
+      if named_groups.any?
+        p(class: "text-xs font-medium text-gray-400 uppercase tracking-wide mt-3 mb-1.5") { "Other" }
+      end
+      div(class: "flex gap-4 overflow-x-auto pb-2") do
+        ungrouped.each { |item| render_book_card(item) }
+      end
+    end
+  end
+
+  def group_value(item, group_by)
+    case group_by
+    when "genre"
+      item.product.genre.presence
+    when "product_type"
+      item.product.product_type&.humanize
+    when "author"
+      item.product.author.presence
     end
   end
 
@@ -70,20 +191,12 @@ class Components::Summary::DashboardView < Components::Base
 
   def render_recommendations
     div(class: "mt-5 flex gap-3") do
-      div(class: "flex items-center gap-2 px-4 py-3 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-400 text-sm font-medium flex-1 justify-center opacity-60 cursor-not-allowed select-none") do
-        span { "🚀" }
-        span { "Explore" }
+      div(class: "flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 border border-indigo-100 text-indigo-400 text-xs font-medium opacity-60 cursor-not-allowed select-none") do
+        span { "🚀 Explore" }
       end
 
-      div(class: "flex-[2] rounded-xl bg-purple-50 border border-purple-100 px-4 py-3 opacity-60 cursor-not-allowed select-none") do
-        div(class: "flex items-center gap-2 text-purple-400 text-sm font-medium mb-2") do
-          span { "🪄" }
-          span { "Recommend" }
-        end
-        div(class: "flex gap-2") do
-          div(class: "flex-1 bg-white rounded-lg px-3 py-2 text-xs text-purple-300 border border-purple-100 text-center") { "Things I would like" }
-          div(class: "flex-1 bg-white rounded-lg px-3 py-2 text-xs text-purple-300 border border-purple-100 text-center") { "Things I might like" }
-        end
+      div(class: "flex items-center gap-2 px-3 py-2 rounded-lg bg-purple-50 border border-purple-100 text-purple-400 text-xs font-medium opacity-60 cursor-not-allowed select-none") do
+        span { "🪄 Recommend" }
       end
     end
   end

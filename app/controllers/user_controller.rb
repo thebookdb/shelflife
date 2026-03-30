@@ -59,6 +59,36 @@ class UserController < ApplicationController
     redirect_to root_path
   end
 
+  def update_dashboard_setting
+    user = Current.user
+    key = params[:key]
+    value = params[:value]
+
+    if key == "reorder_library"
+      library_id = value["library_id"].to_s
+      direction = value["direction"]
+      order = user.get_setting("dashboard_library_order", []).map(&:to_s)
+
+      # Initialize order with all library IDs if empty
+      if order.empty?
+        order = Library.where(user: [user, nil]).order(:name).pluck(:id).map(&:to_s)
+      end
+
+      idx = order.index(library_id)
+      if idx
+        swap_idx = (direction == "up") ? idx - 1 : idx + 1
+        if swap_idx.between?(0, order.length - 1)
+          order[idx], order[swap_idx] = order[swap_idx], order[idx]
+        end
+      end
+      user.update_setting("dashboard_library_order", order)
+    else
+      user.update_setting(key, value)
+    end
+
+    head :ok
+  end
+
   def update_setting
     @user = Current.user
     setting_enabled = params[:user][:hide_invalid_barcodes] == "true"

@@ -1,10 +1,11 @@
 class Components::LibraryItems::ShowView < Components::Base
   include Phlex::Rails::Helpers::FormAuthenticityToken
 
-  def initialize(library_item:)
+  def initialize(library_item:, libraries: [])
     @library_item = library_item
     @product = library_item.product
     @library = library_item.library
+    @libraries = libraries
   end
 
   def view_template
@@ -121,21 +122,32 @@ class Components::LibraryItems::ShowView < Components::Base
               end
             end
 
-            div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
-              div(class: "flex gap-3") do
-                form(action: library_item_path(@library_item), method: "post", class: "inline") do
-                  input(type: "hidden", name: "_method", value: "patch")
-                  input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
-                  input(type: "hidden", name: "library_item[intent]", value: @library_item.have? ? "want" : "have")
-                  input(type: "hidden", name: "return_to", value: library_item_path(@library_item))
-                  button(
-                    type: "submit",
-                    class: @library_item.have? ?
-                      "bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors" :
-                      "bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg transition-colors"
-                  ) { @library_item.have? ? "Mark as Wanted" : "Got it!" }
+            if @libraries.any?
+              div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
+                h3(class: "text-sm font-semibold text-orange-700") { "Change Library" }
+                p(class: "text-xs text-gray-500 mb-3") { "Move this product to another library" }
+
+                have_libraries = @libraries.select(&:default_have?)
+                want_libraries = @libraries.select(&:default_want?)
+
+                if have_libraries.any?
+                  p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Owned" }
+                  div(class: "flex flex-wrap gap-2 mb-3") do
+                    have_libraries.each { |lib| library_chip(lib) }
+                  end
                 end
 
+                if want_libraries.any?
+                  p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Wish List" }
+                  div(class: "flex flex-wrap gap-2") do
+                    want_libraries.each { |lib| library_chip(lib) }
+                  end
+                end
+              end
+            end
+
+            div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
+              div(class: "flex gap-3") do
                 a(
                   href: edit_library_item_path(@library_item),
                   class: "#{@library_item.have? ? "bg-orange-600 hover:bg-orange-700" : "bg-slate-600 hover:bg-slate-700"} text-white px-6 py-2 rounded-lg transition-colors"
@@ -154,6 +166,41 @@ class Components::LibraryItems::ShowView < Components::Base
   end
 
   private
+
+  def library_chip(library)
+    current = library.id == @library.id
+
+    if current
+      chip_classes = if library.default_have?
+        "border-2 border-orange-500 bg-orange-100 text-orange-800"
+      else
+        "border-2 border-slate-400 bg-slate-100 text-slate-700"
+      end
+
+      span(class: "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium #{chip_classes}") do
+        svg(xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20", fill: "currentColor", class: "w-4 h-4") do |s|
+          s.path(
+            fill_rule: "evenodd",
+            d: "M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z",
+            clip_rule: "evenodd"
+          )
+        end
+        plain library.name
+      end
+    else
+      form(action: library_item_path(@library_item), method: "post", class: "inline") do
+        input(type: "hidden", name: "_method", value: "patch")
+        input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
+        input(type: "hidden", name: "library_item[library_id]", value: library.id)
+        input(type: "hidden", name: "library_item[intent]", value: library.default_intent)
+        input(type: "hidden", name: "return_to", value: library_item_path(@library_item))
+        button(
+          type: "submit",
+          class: "inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors cursor-pointer"
+        ) { library.name }
+      end
+    end
+  end
 
   def detail_item(label, value)
     return unless value.present?
