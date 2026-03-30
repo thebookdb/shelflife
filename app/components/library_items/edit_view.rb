@@ -45,7 +45,6 @@ class Components::LibraryItems::EditView < Components::Base
               input(type: "hidden", name: "_method", value: "patch")
               input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
 
-              # Favourite toggle - top right
               div(class: "absolute top-4 right-4") do
                 label(for: "library_item_is_favorite", class: "flex items-center gap-1.5 cursor-pointer select-none") do
                   input(
@@ -56,8 +55,7 @@ class Components::LibraryItems::EditView < Components::Base
                     checked: @library_item.is_favorite,
                     class: "hidden peer"
                   )
-                  star_class = @library_item.is_favorite ? "text-2xl peer-checked:scale-110 transition-transform" : "text-2xl peer-checked:scale-110 transition-transform opacity-40 grayscale"
-                  span(class: star_class) { "⭐" }
+                  span(class: "text-2xl peer-checked:scale-110 transition-transform #{"opacity-40 grayscale" unless @library_item.is_favorite}") { "⭐" }
                   span(class: "text-xs font-medium text-gray-500") { "Trophy" }
                 end
               end

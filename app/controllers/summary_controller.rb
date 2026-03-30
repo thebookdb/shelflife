@@ -16,11 +16,8 @@ class SummaryController < ApplicationController
       {library: library, items: items, group_by: group_by}
     end
 
-    trophy_items = LibraryItem
-      .joins(:product, :library)
-      .where(is_favorite: true, libraries: {user: [Current.user, nil]})
-      .includes(:product, :library)
-      .order(updated_at: :desc)
+    trophy_items = ordered.flat_map { |lib| lib.library_items.select(&:is_favorite) }
+      .sort_by(&:updated_at).last(20).reverse
 
     show_onboarding = Current.user && !Current.user.get_setting("onboarding_dismissed", false)
 
