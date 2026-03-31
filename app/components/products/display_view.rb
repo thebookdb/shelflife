@@ -26,7 +26,7 @@ class Components::Products::DisplayView < Components::Base
 
         if current_library_items.any?
           p(class: "text-sm text-gray-700") do
-            plain "This product is in: "
+            plain "You have a copy of this product in: "
             current_library_items.each_with_index do |item, i|
               plain ", " if i > 0
               a(href: library_item_path(item), class: "font-medium text-orange-600 hover:text-orange-800 hover:underline") { item.library.name }

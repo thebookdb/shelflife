@@ -122,43 +122,43 @@ class Components::LibraryItems::ShowView < Components::Base
               end
             end
 
-            if @libraries.any?
-              div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
-                h3(class: "text-sm font-semibold text-orange-700") { "Change Library" }
-                p(class: "text-xs text-gray-500 mb-3") { "Move this product to another library" }
-
-                have_libraries = @libraries.select(&:default_have?)
-                want_libraries = @libraries.select(&:default_want?)
-
-                if have_libraries.any?
-                  p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Owned" }
-                  div(class: "flex flex-wrap gap-2 mb-3") do
-                    have_libraries.each { |lib| library_chip(lib) }
-                  end
-                end
-
-                if want_libraries.any?
-                  p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Wish List" }
-                  div(class: "flex flex-wrap gap-2") do
-                    want_libraries.each { |lib| library_chip(lib) }
-                  end
-                end
-              end
-            end
-
             div(class: "border-t border-orange-200 p-6 bg-orange-100/40") do
-              div(class: "flex gap-3") do
-                a(
-                  href: edit_library_item_path(@library_item),
-                  class: "#{@library_item.have? ? "bg-orange-600 hover:bg-orange-700" : "bg-slate-600 hover:bg-slate-700"} text-white px-6 py-2 rounded-lg transition-colors"
-                ) { "Edit Item Details" }
+              a(
+                href: edit_library_item_path(@library_item),
+                class: "#{@library_item.have? ? "bg-orange-600 hover:bg-orange-700" : "bg-slate-600 hover:bg-slate-700"} text-white px-6 py-2 rounded-lg transition-colors"
+              ) { "Edit Item Details" }
+            end
+          end
 
-                a(
-                  href: library_path(@library),
-                  class: "bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-                ) { "Back to Library" }
+          if @libraries.any?
+            div(class: "mt-4") do
+              h3(class: "text-sm font-semibold text-gray-700") { "Change Library" }
+              p(class: "text-xs text-gray-500 mb-3") { "Move this product to another library" }
+
+              have_libraries = @libraries.select(&:default_have?)
+              want_libraries = @libraries.select(&:default_want?)
+
+              if have_libraries.any?
+                p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Owned" }
+                div(class: "flex flex-wrap gap-2 mb-3") do
+                  have_libraries.each { |lib| library_chip(lib) }
+                end
+              end
+
+              if want_libraries.any?
+                p(class: "text-xs font-medium text-gray-500 uppercase tracking-wide mb-1.5") { "Wish List" }
+                div(class: "flex flex-wrap gap-2") do
+                  want_libraries.each { |lib| library_chip(lib) }
+                end
               end
             end
+          end
+
+          div(class: "mt-4") do
+            a(
+              href: library_path(@library),
+              class: "text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            ) { "← Back to #{@library.name}" }
           end
         end
       end

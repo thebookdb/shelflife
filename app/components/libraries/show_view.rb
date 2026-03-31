@@ -43,13 +43,15 @@ class Components::Libraries::ShowView < Components::Base
           # Render grouped products (always present for broadcast target)
           div(class: "mt-4", id: "library_products") do
             if @products.any?
-              @products.each do |product|
-                library_items = @grouped_items[product]
-                render Components::Libraries::ProductGroupView.new(
-                  product: product,
-                  library_items: library_items,
-                  library: @library
-                )
+              div(class: "grid grid-cols-1 md:grid-cols-2 gap-3") do
+                @products.each do |product|
+                  library_items = @grouped_items[product]
+                  render Components::Libraries::ProductGroupView.new(
+                    product: product,
+                    library_items: library_items,
+                    library: @library
+                  )
+                end
               end
             else
               div(class: "bg-white rounded-lg shadow-md p-8 text-center", id: "library_empty_state") do

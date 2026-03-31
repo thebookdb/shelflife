@@ -71,43 +71,23 @@ class Components::Products::DisplayDataView < Components::Base
     if @product.description.present?
       div(class: "px-6 pb-4") do
         div(class: "bg-gray-50 rounded-lg p-3") do
-          p(class: "text-sm text-gray-700 leading-relaxed") do
-            truncated_description
-          end
+          p(class: "text-sm text-gray-700 leading-relaxed") { @product.description }
         end
       end
     end
 
     # Product Details
-    if has_product_details?
-      div(class: "px-6 pb-4") do
-        div(class: "grid grid-cols-2 gap-4 text-sm") do
-          if @product.pages.present?
-            div do
-              span(class: "text-gray-500") { "Pages: " }
-              span(class: "font-medium") { @product.pages }
-            end
-          end
-
-          if @product.publication_date.present?
-            div do
-              span(class: "text-gray-500") { "Published: " }
-              span(class: "font-medium") { @product.publication_date.year }
-            end
-          end
-
-          if @product.genre.present?
-            div do
-              span(class: "text-gray-500") { "Genre: " }
-              span(class: "font-medium") { @product.genre }
-            end
-          end
-
-          div do
-            span(class: "text-gray-500") { "Type: " }
-            span(class: "font-medium capitalize") { (@product.product_type || "other").humanize }
-          end
-        end
+    div(class: "px-6 pb-4") do
+      div(class: "grid grid-cols-2 gap-4 text-sm") do
+        detail_field("Type", (@product.product_type || "other").humanize)
+        detail_field("Genre", @product.genre)
+        detail_field("Pages", @product.pages)
+        detail_field("Publisher", @product.publisher)
+        detail_field("Published", @product.publication_date&.strftime("%Y"))
+        detail_field("Format", tbdb_field("package"))
+        detail_field("Language", tbdb_field("language", "name"))
+        detail_field("Age Range", @product.age_range)
+        detail_field("Players", @product.players)
       end
     end
 
@@ -188,15 +168,16 @@ class Components::Products::DisplayDataView < Components::Base
 
   private
 
-  def truncated_description
-    return @product.description if @product.description.length <= 150
+  def detail_field(label, value)
+    return unless value.present?
 
-    "#{@product.description[0..147]}..."
+    div do
+      span(class: "text-gray-500") { "#{label}: " }
+      span(class: "font-medium") { value.to_s }
+    end
   end
 
-  def has_product_details?
-    @product.pages.present? ||
-      @product.publication_date.present? ||
-      @product.genre.present?
+  def tbdb_field(*keys)
+    @product.tbdb_data&.dig("data", *keys)
   end
 end
