@@ -6,7 +6,7 @@ class Components::Shared::LibraryDropdownView < Components::Base
     @product = product
     @button_text = button_text
     @button_class = button_class || "w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium text-sm flex items-center justify-between"
-    @libraries = Library.order(:name)
+    @libraries = Library.order(:position, :name)
   end
 
   def view_template

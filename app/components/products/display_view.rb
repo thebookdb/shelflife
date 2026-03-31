@@ -4,7 +4,7 @@ class Components::Products::DisplayView < Components::Base
 
   def initialize(product:, libraries: [])
     @product = product
-    @libraries = libraries.presence || Library.order(:name)
+    @libraries = libraries.presence || Library.order(:position, :name)
   end
 
   def view_template

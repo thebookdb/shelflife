@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_115007) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_31_072544) do
   create_table "acquisition_sources", force: :cascade do |t|
     t.boolean "active", default: true
     t.datetime "created_at", null: false
@@ -73,6 +73,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_115007) do
     t.integer "default_intent", default: 0, null: false
     t.text "description"
     t.string "name", null: false
+    t.integer "position", default: 0, null: false
     t.datetime "updated_at", null: false
     t.integer "user_id"
     t.integer "visibility", default: 0, null: false

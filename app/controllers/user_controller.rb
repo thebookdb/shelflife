@@ -65,23 +65,25 @@ class UserController < ApplicationController
     value = params[:value]
 
     if key == "reorder_library"
-      library_id = value["library_id"].to_s
+      library = Library.find(value["library_id"])
       direction = value["direction"]
-      order = user.get_setting("dashboard_library_order", []).map(&:to_s)
+      ordered = Library.for_user(user).to_a
 
-      # Initialize order with all library IDs if empty
-      if order.empty?
-        order = Library.where(user: [user, nil]).order(:name).pluck(:id).map(&:to_s)
-      end
+      Library.transaction do
+        unless ordered.each_with_index.all? { |lib, i| lib.position == i }
+          ordered.each_with_index { |lib, i| lib.update_column(:position, i) }
+        end
 
-      idx = order.index(library_id)
-      if idx
-        swap_idx = (direction == "up") ? idx - 1 : idx + 1
-        if swap_idx.between?(0, order.length - 1)
-          order[idx], order[swap_idx] = order[swap_idx], order[idx]
+        idx = ordered.index(library)
+        if idx
+          swap_idx = (direction == "up") ? idx - 1 : idx + 1
+          if swap_idx.between?(0, ordered.length - 1)
+            other = ordered[swap_idx]
+            library.update_column(:position, swap_idx)
+            other.update_column(:position, idx)
+          end
         end
       end
-      user.update_setting("dashboard_library_order", order)
     else
       user.update_setting(key, value)
     end

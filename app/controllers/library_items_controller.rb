@@ -7,7 +7,7 @@ class LibraryItemsController < ApplicationController
   end
 
   def show
-    @libraries = Library.where(user: [Current.user, nil]).order(:name)
+    @libraries = Library.for_user(Current.user)
     render Components::LibraryItems::ShowView.new(library_item: @library_item, libraries: @libraries)
   end
 
