@@ -41,17 +41,13 @@ class Components::Products::DisplayView < Components::Base
         end
       end
 
-      # Library management section
-      div(class: "mt-4 bg-white rounded-lg shadow-md overflow-hidden") do
-        div(class: "px-6 pt-4 pb-2") do
-          h3(class: "text-lg font-medium text-gray-900") { "Add this product to a library" }
-        end
+      # Library management
+      div(class: "mt-4") do
+        render Components::Shared::LibraryChipsView.new(libraries: @libraries, mode: :add, product: @product)
 
-        div(class: "px-6 pb-6") do
-          render Components::Shared::LibraryDropdownView.new(product: @product)
-
-          # Refresh and Delete Product Buttons
-          div(class: "mt-4 pt-4 border-t border-gray-200 flex gap-2") do
+        # Refresh and Delete Product Buttons
+        div(class: "mt-4") do
+          div(class: "flex gap-2") do
             form(method: "post", action: refresh_product_path(@product), class: "inline") do
               input(type: "hidden", name: "authenticity_token", value: form_authenticity_token)
               button(

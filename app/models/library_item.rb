@@ -28,6 +28,7 @@ class LibraryItem < ApplicationRecord
 
   before_create :set_date_added
   before_save :update_last_accessed
+  before_destroy :prevent_orphaning_product
 
   def update_condition(new_condition, notes = nil)
     condition_record = new_condition.is_a?(Condition) ? new_condition : Condition.find_by(name: new_condition)
@@ -61,5 +62,12 @@ class LibraryItem < ApplicationRecord
 
   def update_last_accessed
     self.last_accessed = Time.current if changed? && !new_record?
+  end
+
+  def prevent_orphaning_product
+    return if product.library_items.count > 1
+
+    errors.add(:base, "Cannot remove the last library for a product")
+    throw(:abort)
   end
 end
